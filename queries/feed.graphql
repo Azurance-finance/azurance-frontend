@@ -1,0 +1,45 @@
+query FeedQuery(
+  $first: Int = 100
+  $skip: Int = 0
+  $minReports: BigInt = 0
+  $vault: ID = 1
+) {
+  posts(first: 5) {
+    id
+    owner {
+      id
+    }
+    ipfsHash
+    boosts {
+      id
+    }
+  }
+  users(first: 5) {
+    id
+    posts {
+      id
+    }
+    boosts {
+      id
+    }
+  }
+  postBoosts(
+    first: 10
+    orderBy: amount
+    orderDirection: desc
+    where: {vault_: {id: $vault, paused: false}}
+  ) {
+    id
+    amount
+    vault {
+      id
+    }
+    post {
+      id
+      ipfsHash
+      owner {
+        id
+      }
+    }
+  }
+}

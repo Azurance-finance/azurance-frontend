@@ -1,0 +1,49 @@
+{
+  "name": "shout-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build:graph": "npx graphclient build",
+    "build": "npx graphclient build && next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.8.6",
+    "@cometh/connect-sdk": "^1.1.2",
+    "@graphprotocol/client-urql": "^2.0.0",
+    "@heroicons/react": "^2.0.18",
+    "@material-tailwind/react": "^2.1.5",
+    "@metamask/sdk-react": "^0.10.0",
+    "@nextui-org/react": "^2.2.9",
+    "@react-stately/data": "^3.11.0",
+    "@safe-global/auth-kit": "^1.2.1",
+    "@web3auth/base": "^4.3.0",
+    "@web3auth/modal": "^4.3.1",
+    "@web3auth/openlogin-adapter": "^4.3.0",
+    "axios": "^1.5.1",
+    "ethers": "^5.7.2",
+    "framer-motion": "^10.16.4",
+    "graphql": "^16.8.1",
+    "next": "13.5.4",
+    "nft.storage": "^7.1.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-toastify": "^9.1.3",
+    "urql": "^4.0.5",
+    "zustand": "^4.4.3"
+  },
+  "devDependencies": {
+    "@graphprotocol/client-cli": "^3.0.0",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10",
+    "eslint": "^8",
+    "eslint-config-next": "13.5.4",
+    "postcss": "^8",
+    "tailwindcss": "^3",
+    "typescript": "^5"
+  }
+}

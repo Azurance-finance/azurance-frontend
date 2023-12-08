@@ -1,0 +1,9 @@
+# .graphclientrc.yml
+sources:
+  - name: shout-goerli
+    handler:
+      graphql:
+        endpoint: https://api.thegraph.com/subgraphs/name/sainytk/shout-protocol
+
+documents:
+  - ./queries/feed.graphql
