@@ -182,8 +182,12 @@ export default function TableStake({ dataTable }: any) {
       <StakeModal
         onOpenChange={onOpenChange}
         isOpen={isOpen}
-        token="DAI"
-        wrapToken="sDAI"
+        token1="DAI"
+        token2="sDAI"
+        header="Claim"
+        description="After you successfully submit your ETH claim request
+your ETH will be frozen in your wallet, and you will be
+able to receive rewards."
       />
     </div>
   );

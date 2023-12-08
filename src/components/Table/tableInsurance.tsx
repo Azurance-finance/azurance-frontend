@@ -21,6 +21,7 @@ import { IAzurance } from "../../../types/azurance";
 import { tabSelect } from "@/constants/select.constant";
 import TimeRemine from "../TimeRemine/timeRemine";
 import { Search } from "../Search/search";
+import DepositModal from "../Modal/DepositModal";
 
 export default function TableInsurance({ dataTable }: any) {
   const { favorites, addFavorite, removeFavorite } = useFavoriteStore();
@@ -181,12 +182,7 @@ export default function TableInsurance({ dataTable }: any) {
             : null}
         </tbody>
       </table>
-      <StakeModal
-        onOpenChange={onOpenChange}
-        isOpen={isOpen}
-        token="DAI"
-        wrapToken="sDAI"
-      />
+      <DepositModal onOpenChange={onOpenChange} isOpen={isOpen} />
     </div>
   );
 }
