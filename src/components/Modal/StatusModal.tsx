@@ -35,7 +35,9 @@ const StatusModal = ({
                 <h3 className="my-auto text-black text-base font-semibold">
                   {title}
                 </h3>
-                <p className="my-auto text-sm font-light">{description}</p>
+                <p className="my-auto text-sm font-light capitalize">
+                  {description}
+                </p>
               </div>
             </ModalBody>
             <ModalFooter className=" text-center pb-6">

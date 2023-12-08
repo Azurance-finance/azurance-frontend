@@ -16,7 +16,7 @@ export default function TopNavbar() {
 
   return (
     <Navbar
-      shouldHideOnScroll={true}
+      shouldHideOnScroll={false}
       maxWidth="full"
       className="px-[10rem] bg-[#FFF]"
       classNames={{
