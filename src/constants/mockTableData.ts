@@ -7,10 +7,10 @@ const columns = [
     width: "15%",
   },
   { field: "price", headerName: "Price", sortable: false, width: "10%" },
-  { field: "apr", headerName: "APR", sortable: true, width: "10%" },
+  { field: "apy", headerName: "APY", sortable: true, width: "10%" },
   {
-    field: "percentage",
-    headerName: "Percentage",
+    field: "utilization",
+    headerName: "Utilization",
     sortable: false,
     width: "15%",
   },
@@ -20,7 +20,41 @@ const columns = [
     sortable: false,
     width: "10%",
   },
-  { field: "duration", headerName: "Duration", sortable: true, width: "35%" },
+  {
+    field: "expiration",
+    headerName: "Expiration",
+    sortable: true,
+    width: "35%",
+  },
+];
+
+const columnsInsurance = [
+  {
+    field: "insuranceName",
+    headerName: "Insurance Name",
+    sortable: false,
+    width: "15%",
+  },
+  { field: "price", headerName: "Price", sortable: false, width: "10%" },
+  { field: "benefit", headerName: "BENEFIT", sortable: true, width: "10%" },
+  {
+    field: "utilization",
+    headerName: "Utilization",
+    sortable: false,
+    width: "15%",
+  },
+  {
+    field: "totalSupply",
+    headerName: "Total Supply",
+    sortable: false,
+    width: "10%",
+  },
+  {
+    field: "expiration",
+    headerName: "Expiration",
+    sortable: true,
+    width: "35%",
+  },
 ];
 
 const columnsStake = [
@@ -227,4 +261,11 @@ const stake = [
   },
 ];
 
-export { columns, azurance, stake, statusOptions, columnsStake };
+export {
+  columns,
+  azurance,
+  stake,
+  statusOptions,
+  columnsStake,
+  columnsInsurance,
+};

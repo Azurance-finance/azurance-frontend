@@ -82,7 +82,7 @@ export default function AzuranceTable({ dataTable }: any) {
                 key={column.field}
                 width={column.width}
                 className={`${
-                  column.field === "duration" ? "text-center" : "text-start"
+                  column.field === "expiration" ? "text-center" : "text-start"
                 }`}
               >
                 {column.headerName}
