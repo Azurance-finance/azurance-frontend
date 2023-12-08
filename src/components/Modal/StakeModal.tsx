@@ -27,6 +27,7 @@ const borderedStyle = {
   inputWrapper: `border-1 border-[#D0D5DD]`,
   label: `text-[#5B616E] text-sm font-medium`,
 };
+
 const StakeModal = ({
   isOpen,
   onOpenChange,
@@ -46,6 +47,7 @@ const StakeModal = ({
   const logoToken = tokens.filter(
     (item) => item.tokenSymbol === token1 && item.logo
   );
+  const wording = header === "Claim" ? "claiming" : "stacking";
 
   return (
     <>
@@ -184,8 +186,8 @@ const StakeModal = ({
       <StatusModal
         isOpen={isOpenStack}
         isLoading={false}
-        title={`You are now staking ${amount} ${token1}`}
-        description={`Staking ${amount} ${token1}. You will receive ${calculateAmount} ${token2}`}
+        title={`You are now ${wording} ${amount} ${token1}`}
+        description={`${wording} ${amount} ${token1}. You will receive ${calculateAmount} ${token2}`}
         onOpenChange={onOpenChangeStack}
       />
     </>
