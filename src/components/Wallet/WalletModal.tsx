@@ -118,7 +118,9 @@ export default function WalletModal({ isOpen, onOpenChange }: IWalletModal) {
               </p> */}
           </ModalHeader>
           <ModalBody className=" my-5 ">
-            <h1 className="font-semibold text-2xl">Connect Wallet</h1>
+            <h1 className="font-semibold text-[#0F1419] text-2xl">
+              Connect Wallet
+            </h1>
             <p className="font-normal text-sm text-[#5B616E] pb-4">
               Choose how you want to connect. There are several wallet
               providers.

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 // import FileStatusSelector from "./FileStatusSelector";
 import { SearchIcon } from "../../../public/icons/SearchIcon";
-import { columns } from "@/constants/mockTableData";
+import { columns, columnsInsurance } from "@/constants/mockTableData";
 import Image from "next/image";
 import { formatFiatNumber, formatDecimal } from "@/utils/formatNumber";
 import PercentageBar from "../Slide/PercentageBar";
@@ -21,6 +21,7 @@ import { IAzurance } from "../../../types/azurance";
 import { tabSelect } from "@/constants/select.constant";
 import TimeRemine from "../TimeRemine/timeRemine";
 import { Search } from "../Search/search";
+import DepositModal from "../Modal/DepositModal";
 
 export default function TableInsurance({ dataTable }: any) {
   const { favorites, addFavorite, removeFavorite } = useFavoriteStore();
@@ -85,12 +86,12 @@ export default function TableInsurance({ dataTable }: any) {
             <td width="6%" className="pl-5">
               <span className="hidden">Favorite</span>
             </td>
-            {columns.map((column) => (
+            {columnsInsurance.map((column) => (
               <td
                 key={column.field}
                 width={column.width}
                 className={`${
-                  column.field === "duration" ? "text-center" : "text-start"
+                  column.field === "expiration" ? "text-center" : "text-start"
                 }`}
               >
                 {column.headerName}
@@ -150,7 +151,7 @@ export default function TableInsurance({ dataTable }: any) {
                     <td className="text-start text-[#0F1419]">
                       {formatFiatNumber(Number(item.price))}
                     </td>
-                    <td className="text-start text-[#0F1419]">{item.apr}%</td>
+                    <td className="text-start text-[#0F1419]">{item.apr}x</td>
                     <td className="text-start">
                       <PercentageBar />
                     </td>
@@ -181,12 +182,7 @@ export default function TableInsurance({ dataTable }: any) {
             : null}
         </tbody>
       </table>
-      <StakeModal
-        onOpenChange={onOpenChange}
-        isOpen={isOpen}
-        token="DAI"
-        wrapToken="sDAI"
-      />
+      <DepositModal onOpenChange={onOpenChange} isOpen={isOpen} />
     </div>
   );
 }
