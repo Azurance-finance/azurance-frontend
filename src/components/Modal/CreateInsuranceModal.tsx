@@ -1,6 +1,7 @@
 import { tokens } from "@/constants/token";
 import { yieldPlatforms } from "@/constants/yieldPlateform";
 import {
+  Avatar,
   Button,
   Divider,
   Input,
@@ -12,6 +13,7 @@ import {
   Select,
   SelectItem,
 } from "@nextui-org/react";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 type CreateInsuranceModalTypes = {
   onOpenChange: () => void;
@@ -27,12 +29,32 @@ const triggerStyle = {
   trigger: `border-1 border-[#D0D5DD]`,
   label: `text-[#808080] text-sm font-normal`,
 };
+export const users = [
+  {
+    id: 1,
+    time: "1 year",
+    timeExpire: "1",
+  },
+  {
+    id: 2,
+    time: "2 years",
+    timeExpire: "2",
+  },
+];
 const CreateInsuranceModal = ({
   isOpen,
   onOpenChange,
 }: CreateInsuranceModalTypes) => {
   const [isToken, setIsToken] = useState("USDT");
   const [isYield, setIsYield] = useState("Lido Finance");
+  const [timeExpire, setTimeExpire] = useState("");
+
+  const now = dayjs();
+
+  const futureDate = now.add(+timeExpire, "year");
+
+  const formattedDate = futureDate.format("DD.MM.YYYY h:mm A");
+  console.log("timeExpire", timeExpire);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -85,21 +107,37 @@ const CreateInsuranceModal = ({
                   type="number"
                 />
                 <Select
+                  items={users}
                   labelPlacement="outside"
                   label="Insurance expiration"
                   placeholder="Select date expiration"
                   variant="bordered"
                   size="lg"
                   radius="sm"
+                  onChange={(e) => setTimeExpire(e.target.value)}
                   classNames={triggerStyle}
+                  renderValue={(items) => {
+                    return items.map((item: any) => (
+                      <div key={item.key} className="flex items-center gap-2">
+                        <div className="flex w-full justify-between">
+                          <p>{formattedDate}</p>
+                          <p className=" text-base font-normal text-[#0F1419]">
+                            {item.data.time}
+                          </p>
+                        </div>
+                      </div>
+                    ));
+                  }}
                 >
-                  {/* {animals.map((animal) => (
-                  <SelectItem key={animal.value} value={animal.value}>
-                    {animal.label}
-                  </SelectItem>
-                ))} */}
-                  <SelectItem key={1}>1 year</SelectItem>
-                  <SelectItem key={2}>2 years</SelectItem>
+                  {(user) => (
+                    <SelectItem key={user.id} textValue={user.timeExpire}>
+                      <div className="flex gap-2 items-center">
+                        <div className="flex w-full justify-between">
+                          <p className="text-small">{user.time}</p>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  )}
                 </Select>
                 <Select
                   labelPlacement="outside"
@@ -112,7 +150,6 @@ const CreateInsuranceModal = ({
                   value={isToken}
                   onChange={(e) => {
                     setIsToken(e.target.value);
-                    // setIsTokenLogo(e.target.value);
                   }}
                   defaultSelectedKeys={[isToken]}
                   startContent={
