@@ -10,7 +10,7 @@ export default function Home() {
         description="Decentralized insurance platform that providing flexible conditions on-chain"
         isCreateInsurance={false}
       />
-      <Table data={azurance} />
+      <Table dataTable={azurance} />
     </div>
   );
 }

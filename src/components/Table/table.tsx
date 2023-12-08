@@ -41,6 +41,8 @@ export default function AzuranceTable({ dataTable }: any) {
     return insuranceList;
   }, [search, insuranceList]);
 
+  console.log({ data });
+
   const renderFavorite = (id: string) => {
     if (favorites.find((item) => item.id === id)) {
       return <StarIconSolid />;
