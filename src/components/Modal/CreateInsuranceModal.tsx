@@ -62,81 +62,81 @@ const CreateInsuranceModal = ({
   });
   const futureDate = now.add(+insurance.expiration, "second");
   const formattedDate = futureDate.format("DD.MM.YYYY h:mm A");
-
-  const handleCreateInsurance = useCallback(async () => {
-    setCreating(true);
-
-    try {
-      await uploadImage();
-      const multiplerDecimals = 6;
-      if (provider) {
-        const signer = provider.getSigner();
-
-        const block = await provider.getBlock("pending");
-
-        const currentTs = Math.floor(new Date().valueOf() / 1000);
-        const maturityTs = currentTs + Number(insurance.expiration);
-        const staleTs =
-          currentTs + Math.floor(Number(insurance.expiration) * 0.8);
-
-        const contractAddress =
-          CONTRACT_ADDRESS[currentChainId]["AzruanceFactory"];
-
-        const multipler =
-          insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
-        const maturityBlock = Math.floor(
-          (maturityTs * block.number) / block.timestamp
-        );
-        const staleBlock = Math.floor(
-          (staleTs * block.number) / block.timestamp
-        );
-        const asset = CONTRACT_ADDRESS[currentChainId][insurance.token];
-        const fee = 0;
-        const feeTo = await signer.getAddress();
-        const condition = insurance.condition;
-        const name = insurance.name;
-        const symbol = insurance.symbol;
-
-        const tx = await azuranceFactoryContractService.createAzuranceContract(
-          contractAddress,
-          signer,
-          multipler,
-          maturityBlock,
-          staleBlock,
-          asset,
-          fee,
-          feeTo,
-          condition,
-          name,
-          symbol
-        );
-
-        alert(`Submit transaction complete: ${tx.hash}`);
+  const handleCreateInsurance = useCallback(
+    async (file: FileList) => {
+      setCreating(true);
+      uploadImage(file[0]);
+      try {
+        const multiplerDecimals = 6;
+        if (provider) {
+          const signer = provider.getSigner();
+          const block = await provider.getBlock("pending");
+          const currentTs = Math.floor(new Date().valueOf() / 1000);
+          const maturityTs = currentTs + Number(insurance.expiration);
+          const staleTs =
+            currentTs + Math.floor(Number(insurance.expiration) * 0.8);
+          const contractAddress =
+            CONTRACT_ADDRESS[currentChainId]["AzruanceFactory"];
+          const multipler =
+            insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
+          const maturityBlock = Math.floor(
+            (maturityTs * block.number) / block.timestamp
+          );
+          const staleBlock = Math.floor(
+            (staleTs * block.number) / block.timestamp
+          );
+          const asset = CONTRACT_ADDRESS[currentChainId][insurance.token];
+          const fee = 0;
+          const feeTo = await signer.getAddress();
+          const condition = insurance.condition;
+          const name = insurance.name;
+          const symbol = insurance.symbol;
+          const tx =
+            await azuranceFactoryContractService.createAzuranceContract(
+              contractAddress,
+              signer,
+              multipler,
+              maturityBlock,
+              staleBlock,
+              asset,
+              fee,
+              feeTo,
+              condition,
+              name,
+              symbol
+            );
+          alert(`Submit transaction complete: ${tx.hash}`);
+        }
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
-    }
 
-    setCreating(false);
-  }, [provider, currentChainId, insurance]);
+      setCreating(false);
+    },
+    [provider, currentChainId, insurance]
+  );
   // Upload image to firebase
   const [imgFile, setImgFile] = useState<FileList>();
   const [imgUrl, setImgUrl] = useState(null);
 
-  const uploadImage = async () => {
-    if (!imgFile) return;
-    const storageRef = ref(storage, `files/${imgFile[0].name}`);
-    const uploadTask = uploadBytesResumable(storageRef, imgFile[0]);
+  const uploadImage = async (file: File) => {
+    if (!file) return;
+    const storageRef = ref(storage, `files/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on(
       "state_changed",
-      (error: any) => {
+      (snapshot) => {
+        const progress = Math.round(
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        );
+        // setProgresspercent(progress);
+      },
+      (error) => {
         alert(error);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log({ downloadURL });
-
           setImgUrl(downloadURL as any);
         });
       }
@@ -400,7 +400,9 @@ const CreateInsuranceModal = ({
               <Button
                 color="primary"
                 isLoading={creating}
-                onPress={handleCreateInsurance}
+                onPress={() => {
+                  handleCreateInsurance(imgFile as FileList);
+                }}
                 className="w-1/2"
               >
                 Create
