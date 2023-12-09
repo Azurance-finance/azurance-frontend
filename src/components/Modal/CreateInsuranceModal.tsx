@@ -279,7 +279,7 @@ const CreateInsuranceModal = ({
                   placeholder="Contract address"
                   classNames={borderedStyle}
                   value={insurance.condition}
-                  description={<span>Get a condition contract <a href={LINKS.conditionContractGuide} target="_blank">here</a></span>}
+                  description={<a href={LINKS.conditionContractGuide} target="_blank">Get a condition contract here</a>}
                   onChange={(e) => {
                     setInsurance((prevInsurance) => ({
                       ...prevInsurance,
