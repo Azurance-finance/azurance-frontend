@@ -1,5 +1,6 @@
+import { LINKS } from "@/constants/links.constant";
 import { tokens } from "@/constants/token";
-import { yieldPlatforms } from "@/constants/yieldPlateform";
+import { yieldPlatformObj, yieldPlatforms } from "@/constants/yieldPlateform";
 import {
   Avatar,
   Button,
@@ -68,7 +69,7 @@ const CreateInsuranceModal = ({
                 Create Insurance
               </h1>
               <p className=" text-sm text-[#A3A3A3] font-normal font">
-                This insurance doesn’t support lazy minting
+                The created insurance is open for everyone
               </p>
             </ModalHeader>
             <Divider />
@@ -132,7 +133,7 @@ const CreateInsuranceModal = ({
                 <Select
                   items={users}
                   labelPlacement="outside"
-                  label="Insurance expiration"
+                  label="Insurance Expiration"
                   placeholder="Select date expiration"
                   variant="bordered"
                   size="lg"
@@ -221,6 +222,7 @@ const CreateInsuranceModal = ({
                   labelPlacement="outside"
                   label="Yield Platform"
                   // placeholder="Select a yield platform"
+                  description={`Estimated APY: ${(yieldPlatformObj[insurance.yieldPlatform].apy * 100).toLocaleString()}%`}
                   variant="bordered"
                   size="lg"
                   radius="sm"
@@ -272,11 +274,12 @@ const CreateInsuranceModal = ({
                   radius="sm"
                   type="name"
                   variant="bordered"
-                  label="Condition"
+                  label="Condition Contract"
                   labelPlacement="outside"
-                  placeholder="Url"
+                  placeholder="Contract address"
                   classNames={borderedStyle}
                   value={insurance.condition}
+                  description={<span>Get a condition contract <a href={LINKS.conditionContractGuide} target="_blank">here</a></span>}
                   onChange={(e) => {
                     setInsurance((prevInsurance) => ({
                       ...prevInsurance,
