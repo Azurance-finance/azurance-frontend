@@ -1,4 +1,4 @@
-export const AZURANCE_CHECKER_ABI = [
+export const AZURANCE_CONDITION_ABI = [
     {
         "type": "function",
         "name": "checkUnlockClaim",

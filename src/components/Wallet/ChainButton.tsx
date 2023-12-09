@@ -1,5 +1,5 @@
 import { mappingChainInfo } from "@/configs/chain.config";
-import { CHAINS } from "@/constants/chian.constant";
+import { CHAINS } from "@/constants/chain.constant";
 import { useWalletStore } from "@/store/wallet/wallet.store";
 import { isContainObjectKey } from "@/utils/object.util";
 import { Button } from "@nextui-org/react";

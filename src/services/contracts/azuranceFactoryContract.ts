@@ -18,12 +18,12 @@ const createAzuranceContract = async (
   asset: string, 
   fee: number | ethers.BigNumber, 
   feeTo: string, 
-  checker: string, 
+  condition: string, 
   name: string, 
   symbol: string,
 ) => {
   const contract = azuranceFactoryContract(contractAddress, provider);
-  const tx = await contract.createAzuranceContract(multiplier, maturityBlock, staleBlock, asset, fee, feeTo, checker, name, symbol);
+  const tx = await contract.createAzuranceContract(multiplier, maturityBlock, staleBlock, asset, fee, feeTo, condition, name, symbol);
   await tx.wait();
   return tx;
 };

@@ -3,7 +3,7 @@ import { useWalletStore } from "@/store/wallet/wallet.store";
 import { useSDK } from "@metamask/sdk-react";
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
-import { CHAINS } from "@/constants/chian.constant";
+import { CHAINS } from "@/constants/chain.constant";
 
 export const useMetaMask = () => {
   const { sdk, connected, connecting, provider: publicProvider } = useSDK();
