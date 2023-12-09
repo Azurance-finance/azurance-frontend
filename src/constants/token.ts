@@ -15,9 +15,9 @@ export const tokens = [
   },
   {
     tokenAddress: "",
-    tokenName: "Etherum",
-    tokenSymbol: "ETH",
+    tokenName: "Wrapped Etherum",
+    tokenSymbol: "WETH",
     decimal: 18,
-    logo: "/tokens/ETH.png",
+    logo: "/tokens/WETH.png",
   },
 ];
