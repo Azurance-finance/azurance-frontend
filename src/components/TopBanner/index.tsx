@@ -15,7 +15,7 @@ const TopBanner = ({
   description,
   isCreateInsurance,
 }: TopBannerTypes) => {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   return (
     <div>
       <div className="flex justify-between py-10">
@@ -26,7 +26,11 @@ const TopBanner = ({
           </div>
         )}
 
-        <CreateInsuranceModal isOpen={isOpen} onOpenChange={onOpenChange} />
+        <CreateInsuranceModal
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+          onClose={onClose}
+        />
       </div>
     </div>
   );

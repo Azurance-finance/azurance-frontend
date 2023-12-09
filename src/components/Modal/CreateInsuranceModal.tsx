@@ -19,6 +19,7 @@ import {
   ModalHeader,
   Select,
   SelectItem,
+  useDisclosure,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
 import React, { useCallback, useEffect, useState } from "react";
@@ -26,10 +27,12 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { storage } from "@/utils/firebaseStorage";
+import StatusModal from "./StatusModal";
 
 type CreateInsuranceModalTypes = {
   onOpenChange: () => void;
   isOpen: boolean;
+  onClose: () => void;
 };
 
 const borderedStyle = {
@@ -45,10 +48,15 @@ const triggerStyle = {
 const CreateInsuranceModal = ({
   isOpen,
   onOpenChange,
+  onClose,
 }: CreateInsuranceModalTypes) => {
   const { provider } = useProvider();
   const { currentChainId } = useWalletStore();
-
+  const {
+    isOpen: isOpenSuccess,
+    onOpenChange: onOpenChangeSuccess,
+    onOpen: onOpenSuccess,
+  } = useDisclosure();
   const now = dayjs();
   const [creating, setCreating] = useState(false);
   const [insurance, setInsurance] = useState({
@@ -111,7 +119,9 @@ const CreateInsuranceModal = ({
           symbol
         );
 
-        alert(`Submit transaction complete: ${tx.hash}`);
+        // alert(`Submit transaction complete: ${tx.hash}`);
+        onOpenSuccess();
+        onClose();
       }
     } catch (e) {
       console.error(e);
@@ -144,272 +154,282 @@ const CreateInsuranceModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-      <ModalContent>
-        {(onClose) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              <h1 className=" text-lg font-semibold text-[#0F1419]">
-                Create Insurance
-              </h1>
-              <p className=" text-sm text-[#A3A3A3] font-normal font">
-                The created insurance is open for everyone
-              </p>
-            </ModalHeader>
-            <Divider />
-            <ModalBody>
-              <div className=" space-y-12 overflow-y-scroll h-[420px] py-4 no-scrollbar">
-                <div>
-                  <input
-                    type="file"
+    <>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                <h1 className=" text-lg font-semibold text-[#0F1419]">
+                  Create Insurance
+                </h1>
+                <p className=" text-sm text-[#A3A3A3] font-normal font">
+                  The created insurance is open for everyone
+                </p>
+              </ModalHeader>
+              <Divider />
+              <ModalBody>
+                <div className=" space-y-12 overflow-y-scroll h-[420px] py-4 no-scrollbar">
+                  <div>
+                    <input
+                      type="file"
+                      onChange={(e) => {
+                        setImgFile(e.target.files as FileList);
+                      }}
+                    />
+                    <span>{imgUrl && imgUrl}</span>
+                  </div>
+                  <Input
+                    key="insurance-name"
+                    size="lg"
+                    radius="sm"
+                    type="name"
+                    variant="bordered"
+                    label="Insurance Name"
+                    labelPlacement="outside"
+                    placeholder="Enter your insurance name"
+                    classNames={borderedStyle}
+                    value={insurance.name}
                     onChange={(e) => {
-                      setImgFile(e.target.files as FileList);
+                      setInsurance((prevInsurance) => ({
+                        ...prevInsurance,
+                        name: e.target.value,
+                      }));
                     }}
                   />
-                  <span>{imgUrl && imgUrl}</span>
+                  <Input
+                    key="insurance-symbol"
+                    size="lg"
+                    radius="sm"
+                    variant="bordered"
+                    label="Symbol"
+                    labelPlacement="outside"
+                    placeholder="Enter your symbol"
+                    classNames={borderedStyle}
+                    value={insurance.symbol}
+                    onChange={(e) => {
+                      setInsurance((prevInsurance) => ({
+                        ...prevInsurance,
+                        symbol: e.target.value,
+                      }));
+                    }}
+                  />
+                  <Input
+                    key="multiplier"
+                    size="lg"
+                    radius="sm"
+                    variant="bordered"
+                    label="Benefit Multiplier"
+                    labelPlacement="outside"
+                    placeholder="0"
+                    description="Suggested: 0x, 10x, 20x, 30x. Maximum is 50x"
+                    endContent="X"
+                    classNames={borderedStyle}
+                    type="number"
+                    value={insurance.benefitMultiplier.toString()}
+                    onChange={(e) => {
+                      setInsurance((prevInsurance) => ({
+                        ...prevInsurance,
+                        benefitMultiplier: Number(e.target.value),
+                      }));
+                    }}
+                  />
+                  <Select
+                    items={times}
+                    labelPlacement="outside"
+                    label="Insurance Expiration"
+                    placeholder="Select date expiration"
+                    variant="bordered"
+                    size="lg"
+                    radius="sm"
+                    classNames={triggerStyle}
+                    value={insurance.expiration}
+                    onChange={(e) => {
+                      console.log(e.target.value);
+                      setInsurance((prevInsurance) => ({
+                        ...prevInsurance,
+                        expiration: e.target.value,
+                      }));
+                    }}
+                    renderValue={(items) => {
+                      return items.map((item: any) => (
+                        <div key={item.key} className="flex items-center gap-2">
+                          <div className="flex w-full justify-between">
+                            <p>{formattedDate}</p>
+                            <p className=" text-base font-normal text-[#0F1419]">
+                              {item.data.time}
+                            </p>
+                          </div>
+                        </div>
+                      ));
+                    }}
+                  >
+                    {(time) => (
+                      <SelectItem key={time.timeExpire} textValue={time.time}>
+                        <div className="flex gap-2 items-center">
+                          <div className="flex w-full justify-between">
+                            <p className="text-small">{time.time}</p>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    )}
+                  </Select>
+                  <Select
+                    labelPlacement="outside"
+                    label="Token"
+                    placeholder="Select a token"
+                    variant="bordered"
+                    size="lg"
+                    radius="sm"
+                    classNames={triggerStyle}
+                    onChange={(e) => {
+                      setInsurance((prevInsurance) => ({
+                        ...prevInsurance,
+                        token: e.target.value,
+                      }));
+                    }}
+                    defaultSelectedKeys={[insurance.token]}
+                    startContent={
+                      insurance.token && (
+                        <picture>
+                          <img
+                            src={`tokens/${insurance.token.toUpperCase()}.png`}
+                            width={24}
+                            height={24}
+                            alt=""
+                            className="mr-2"
+                          />
+                        </picture>
+                      )
+                    }
+                  >
+                    {tokens.map((token, index) => (
+                      <SelectItem
+                        key={token.tokenSymbol}
+                        value={token.tokenSymbol}
+                        startContent={
+                          <picture>
+                            <img
+                              src={token.logo}
+                              width={24}
+                              height={24}
+                              alt=""
+                              className="mr-2"
+                            />
+                          </picture>
+                        }
+                      >
+                        {token.tokenSymbol}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <Select
+                    labelPlacement="outside"
+                    label="Yield Platform"
+                    // placeholder="Select a yield platform"
+                    description={`Estimated APY: ${(
+                      yieldPlatformObj[insurance.yieldPlatform].apy * 100
+                    ).toLocaleString()}%`}
+                    variant="bordered"
+                    size="lg"
+                    radius="sm"
+                    classNames={triggerStyle}
+                    onChange={(e) => {
+                      setInsurance((prevInsurance) => ({
+                        ...prevInsurance,
+                        yieldPlatform: e.target.value,
+                      }));
+                    }}
+                    defaultSelectedKeys={[insurance.yieldPlatform]}
+                    startContent={
+                      insurance.yieldPlatform && (
+                        <picture>
+                          <img
+                            src={`yield/${insurance.yieldPlatform.trim()}.png`}
+                            width={24}
+                            height={24}
+                            alt=""
+                            className="mr-2"
+                          />
+                        </picture>
+                      )
+                    }
+                  >
+                    {yieldPlatforms.map((yieldPlatfrom, index) => (
+                      <SelectItem
+                        key={yieldPlatfrom.name}
+                        value={yieldPlatfrom.name}
+                        startContent={
+                          <picture>
+                            <img
+                              src={yieldPlatfrom.logo}
+                              width={24}
+                              height={24}
+                              alt=""
+                              className="mr-2"
+                            />
+                          </picture>
+                        }
+                      >
+                        {yieldPlatfrom.name}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <Input
+                    key="condition"
+                    size="lg"
+                    radius="sm"
+                    type="name"
+                    variant="bordered"
+                    label="Condition Contract"
+                    labelPlacement="outside"
+                    placeholder="Contract address"
+                    classNames={borderedStyle}
+                    value={insurance.condition}
+                    description={
+                      <a href={LINKS.conditionContractGuide} target="_blank">
+                        Get a condition contract here
+                      </a>
+                    }
+                    onChange={(e) => {
+                      setInsurance((prevInsurance) => ({
+                        ...prevInsurance,
+                        condition: e.target.value,
+                      }));
+                    }}
+                  />
                 </div>
-                <Input
-                  key="insurance-name"
-                  size="lg"
-                  radius="sm"
-                  type="name"
+              </ModalBody>
+              <ModalFooter>
+                <Button
                   variant="bordered"
-                  label="Insurance Name"
-                  labelPlacement="outside"
-                  placeholder="Enter your insurance name"
-                  classNames={borderedStyle}
-                  value={insurance.name}
-                  onChange={(e) => {
-                    setInsurance((prevInsurance) => ({
-                      ...prevInsurance,
-                      name: e.target.value,
-                    }));
-                  }}
-                />
-                <Input
-                  key="insurance-symbol"
-                  size="lg"
-                  radius="sm"
-                  variant="bordered"
-                  label="Symbol"
-                  labelPlacement="outside"
-                  placeholder="Enter your symbol"
-                  classNames={borderedStyle}
-                  value={insurance.symbol}
-                  onChange={(e) => {
-                    setInsurance((prevInsurance) => ({
-                      ...prevInsurance,
-                      symbol: e.target.value,
-                    }));
-                  }}
-                />
-                <Input
-                  key="multiplier"
-                  size="lg"
-                  radius="sm"
-                  variant="bordered"
-                  label="Benefit Multiplier"
-                  labelPlacement="outside"
-                  placeholder="0"
-                  description="Suggested: 0x, 10x, 20x, 30x. Maximum is 50x"
-                  endContent="X"
-                  classNames={borderedStyle}
-                  type="number"
-                  value={insurance.benefitMultiplier.toString()}
-                  onChange={(e) => {
-                    setInsurance((prevInsurance) => ({
-                      ...prevInsurance,
-                      benefitMultiplier: Number(e.target.value),
-                    }));
-                  }}
-                />
-                <Select
-                  items={times}
-                  labelPlacement="outside"
-                  label="Insurance Expiration"
-                  placeholder="Select date expiration"
-                  variant="bordered"
-                  size="lg"
-                  radius="sm"
-                  classNames={triggerStyle}
-                  value={insurance.expiration}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setInsurance((prevInsurance) => ({
-                      ...prevInsurance,
-                      expiration: e.target.value,
-                    }));
-                  }}
-                  renderValue={(items) => {
-                    return items.map((item: any) => (
-                      <div key={item.key} className="flex items-center gap-2">
-                        <div className="flex w-full justify-between">
-                          <p>{formattedDate}</p>
-                          <p className=" text-base font-normal text-[#0F1419]">
-                            {item.data.time}
-                          </p>
-                        </div>
-                      </div>
-                    ));
-                  }}
+                  onPress={onClose}
+                  className="w-1/2 border-1 border-[#D0D5DD] text-[#404040]"
                 >
-                  {(time) => (
-                    <SelectItem key={time.timeExpire} textValue={time.time}>
-                      <div className="flex gap-2 items-center">
-                        <div className="flex w-full justify-between">
-                          <p className="text-small">{time.time}</p>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  )}
-                </Select>
-                <Select
-                  labelPlacement="outside"
-                  label="Token"
-                  placeholder="Select a token"
-                  variant="bordered"
-                  size="lg"
-                  radius="sm"
-                  classNames={triggerStyle}
-                  onChange={(e) => {
-                    setInsurance((prevInsurance) => ({
-                      ...prevInsurance,
-                      token: e.target.value,
-                    }));
-                  }}
-                  defaultSelectedKeys={[insurance.token]}
-                  startContent={
-                    insurance.token && (
-                      <picture>
-                        <img
-                          src={`tokens/${insurance.token.toUpperCase()}.png`}
-                          width={24}
-                          height={24}
-                          alt=""
-                          className="mr-2"
-                        />
-                      </picture>
-                    )
-                  }
+                  Cancel
+                </Button>
+                <Button
+                  color="primary"
+                  isLoading={creating}
+                  onPress={handleCreateInsurance}
+                  className="w-1/2"
                 >
-                  {tokens.map((token, index) => (
-                    <SelectItem
-                      key={token.tokenSymbol}
-                      value={token.tokenSymbol}
-                      startContent={
-                        <picture>
-                          <img
-                            src={token.logo}
-                            width={24}
-                            height={24}
-                            alt=""
-                            className="mr-2"
-                          />
-                        </picture>
-                      }
-                    >
-                      {token.tokenSymbol}
-                    </SelectItem>
-                  ))}
-                </Select>
-                <Select
-                  labelPlacement="outside"
-                  label="Yield Platform"
-                  // placeholder="Select a yield platform"
-                  description={`Estimated APY: ${(
-                    yieldPlatformObj[insurance.yieldPlatform].apy * 100
-                  ).toLocaleString()}%`}
-                  variant="bordered"
-                  size="lg"
-                  radius="sm"
-                  classNames={triggerStyle}
-                  onChange={(e) => {
-                    setInsurance((prevInsurance) => ({
-                      ...prevInsurance,
-                      yieldPlatform: e.target.value,
-                    }));
-                  }}
-                  defaultSelectedKeys={[insurance.yieldPlatform]}
-                  startContent={
-                    insurance.yieldPlatform && (
-                      <picture>
-                        <img
-                          src={`yield/${insurance.yieldPlatform.trim()}.png`}
-                          width={24}
-                          height={24}
-                          alt=""
-                          className="mr-2"
-                        />
-                      </picture>
-                    )
-                  }
-                >
-                  {yieldPlatforms.map((yieldPlatfrom, index) => (
-                    <SelectItem
-                      key={yieldPlatfrom.name}
-                      value={yieldPlatfrom.name}
-                      startContent={
-                        <picture>
-                          <img
-                            src={yieldPlatfrom.logo}
-                            width={24}
-                            height={24}
-                            alt=""
-                            className="mr-2"
-                          />
-                        </picture>
-                      }
-                    >
-                      {yieldPlatfrom.name}
-                    </SelectItem>
-                  ))}
-                </Select>
-                <Input
-                  key="condition"
-                  size="lg"
-                  radius="sm"
-                  type="name"
-                  variant="bordered"
-                  label="Condition Contract"
-                  labelPlacement="outside"
-                  placeholder="Contract address"
-                  classNames={borderedStyle}
-                  value={insurance.condition}
-                  description={
-                    <a href={LINKS.conditionContractGuide} target="_blank">
-                      Get a condition contract here
-                    </a>
-                  }
-                  onChange={(e) => {
-                    setInsurance((prevInsurance) => ({
-                      ...prevInsurance,
-                      condition: e.target.value,
-                    }));
-                  }}
-                />
-              </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                variant="bordered"
-                onPress={onClose}
-                className="w-1/2 border-1 border-[#D0D5DD] text-[#404040]"
-              >
-                Cancel
-              </Button>
-              <Button
-                color="primary"
-                isLoading={creating}
-                onPress={handleCreateInsurance}
-                className="w-1/2"
-              >
-                Create
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+                  Create
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      <StatusModal
+        isFooter={false}
+        isOpen={isOpenSuccess}
+        isLoading={false}
+        title="Create insurance success fully"
+        description="Your insurance has been successfully created."
+        onOpenChange={onOpenChangeSuccess}
+      />
+    </>
   );
 };
 
