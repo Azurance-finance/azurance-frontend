@@ -86,6 +86,16 @@ const columnsStake = [
   },
 ];
 
+const columnsToken = [
+  {
+    field: "token",
+    headerName: "Token",
+    sortable: false,
+    width: "20%",
+  },
+  { field: "balance", headerName: "Balance", sortable: false, width: "20%" },
+];
+
 const statusOptions = [
   { name: "Active", uid: "active" },
   { name: "Paused", uid: "paused" },
@@ -261,11 +271,37 @@ const stake = [
   },
 ];
 
+const tokens = [
+  {
+    tokenName: "DAI",
+    tokenSymbol: "DAI",
+    tokenAddress: "0xEa5363305017B2A6fD0d72Ba830513c678a2f1fE",
+    tokenLogo: "tokens/DAI.png",
+    tokenDecimal: 18,
+  },
+  {
+    tokenName: "WETH",
+    tokenSymbol: "WETH",
+    tokenAddress: "0x68cF7D5CEC3f8Cd69d7Bd842e1665818E46E2126",
+    tokenLogo: "tokens/WETH.png",
+    tokenDecimal: 18,
+  },
+  {
+    tokenName: "USDT",
+    tokenSymbol: "USDT",
+    tokenAddress: "0x38430d2703246F986685F68E2817CB370F5f3CCD",
+    tokenLogo: "tokens/USDT.png",
+    tokenDecimal: 18,
+  },
+];
+
 export {
   columns,
   azurance,
   stake,
+  tokens,
   statusOptions,
   columnsStake,
   columnsInsurance,
+  columnsToken,
 };
