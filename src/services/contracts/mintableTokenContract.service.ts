@@ -1,11 +1,12 @@
 import { ERC20_ABI } from "@/constants/abis/erc20.abi";
+import { MINTABLE_ERC20_ABI } from "@/constants/abis/mintableERC20.abi";
 import { ethers } from "ethers";
 
 const tokenContract = (
   contractAddress: string,
   provider: ethers.Signer | ethers.providers.Provider
 ) => {
-  return new ethers.Contract(contractAddress, ERC20_ABI, provider);
+  return new ethers.Contract(contractAddress, MINTABLE_ERC20_ABI, provider);
 };
 
 const getBalance = async (
@@ -54,14 +55,14 @@ const mint = async (
   const tx = await contract.mint(to, amount);
   await tx.wait();
   return tx;
-}
+};
 
 const tokenContractService = {
   tokenContract,
   getBalance,
   getAllowance,
   approve,
-  mint
+  mint,
 };
 
 export default tokenContractService;
