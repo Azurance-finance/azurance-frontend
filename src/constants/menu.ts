@@ -33,4 +33,10 @@ export const MENU = [
     // solidIcon: SolidUserIcon,
     path: "/claim",
   },
+  {
+    name: "Faucet",
+    // icon: UserIcon,
+    // solidIcon: SolidUserIcon,
+    path: "/faucet",
+  },
 ];
