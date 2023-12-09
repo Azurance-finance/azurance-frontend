@@ -28,6 +28,7 @@ import { getAnalytics } from "firebase/analytics";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { storage } from "@/utils/firebaseStorage";
 import StatusModal from "./StatusModal";
+import { CameraIcon } from "@heroicons/react/24/outline";
 
 type CreateInsuranceModalTypes = {
   onOpenChange: () => void;
@@ -128,6 +129,7 @@ const CreateInsuranceModal = ({
   // Upload image to firebase
   const [imgFile, setImgFile] = useState<FileList>();
   const [imgUrl, setImgUrl] = useState(null);
+  console.log(imgFile);
 
   const uploadImage = async (file: File) => {
     if (!file) return;
@@ -171,13 +173,27 @@ const CreateInsuranceModal = ({
               <ModalBody>
                 <div className=" space-y-12 overflow-y-scroll h-[420px] py-4 no-scrollbar">
                   <div>
-                    <input
-                      type="file"
-                      onChange={(e) => {
-                        setImgFile(e.target.files as FileList);
-                      }}
-                    />
-                    <span>{imgUrl && imgUrl}</span>
+                    <div className="text-[#5B616E] text-sm font-normal mb-1.5">
+                      Image Insurance
+                    </div>
+                    <div className=" flex justify-between border-1 border-[#D0D5DD] p-2.5 rounded-lg">
+                      <div>{imgUrl ? imgUrl : "No file chosen"}</div>
+                      <div>
+                        <label htmlFor="file">
+                          <div className=" rounded-lg text-xs text-[#0F1419] font-normal border-1 border-[#D0D5DD] bg-[#F7F9F9] px-2.5 py-1.5 cursor-pointer">
+                            Choose file
+                          </div>
+                        </label>
+                        <input
+                          type="file"
+                          id="file"
+                          className="hidden"
+                          onChange={(e) => {
+                            setImgFile(e.target.files as FileList);
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
                   <Input
                     key="insurance-name"
