@@ -1,9 +1,10 @@
 # .graphclientrc.yml
 sources:
-  - name: shout-goerli
+  - name: azurance
     handler:
       graphql:
-        endpoint: https://api.thegraph.com/subgraphs/name/sainytk/shout-protocol
+        endpoint: https://api.studio.thegraph.com/query/44385/azurance/version/latest
 
 documents:
-  - ./queries/feed.graphql
+  - ./queries/active-insurance.graphql
+  - ./queries/inactive-insurance.graphql

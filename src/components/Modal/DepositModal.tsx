@@ -1,4 +1,7 @@
 import { tokens } from "@/constants/token";
+import { useProvider } from "@/hooks/provider.hook";
+import azurancePoolContractService from "@/services/contracts/azurancePoolContract";
+import tokenContractService from "@/services/contracts/tokenContract.service";
 import {
   Button,
   Divider,
@@ -11,7 +14,8 @@ import {
   Select,
   SelectItem,
 } from "@nextui-org/react";
-import React, { useState } from "react";
+import { ethers } from "ethers";
+import React, { useEffect, useState } from "react";
 const borderedStyle = {
   inputWrapper: `border-1 border-[#D0D5DD]`,
   label: `text-[#5B616E] text-sm font-normal`,
@@ -24,11 +28,77 @@ const triggerStyle = {
 type DepositModalTypes = {
   isOpen: boolean;
   onOpenChange: () => void;
+  token: string,
+  tokenAddress: string,
+  outputToken: string,
+  pool: string
 };
-const DepositModal = ({ isOpen, onOpenChange }: DepositModalTypes) => {
+const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken, pool }: DepositModalTypes) => {
   const [amount, setAmount] = useState("");
-  const [isToken, setIsToken] = useState("USDT");
-  const availableAmount = 5323.123343;
+  const [availableAmount, setAvailableAmount] = useState(0);
+  const [allowance, setAllowance] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const { provider } = useProvider();
+
+  useEffect(() => {
+
+    (async () => {
+      if (provider) {
+        const signer = provider?.getSigner();
+        const address = await signer.getAddress();
+
+        const balance = await tokenContractService.getBalance(tokenAddress, provider, address);
+        const allowance = await tokenContractService.getAllowance(tokenAddress, provider, address, pool);
+        setAvailableAmount(+balance);
+        setAllowance(+allowance)
+      }
+    })()
+
+  }, [tokenAddress, provider]);
+
+  const handleApprove = async () => {
+    setLoading(true);
+    if (provider) {
+      try {
+        const signer = provider?.getSigner();
+        await tokenContractService.approve(tokenAddress, signer, pool, ethers.constants.MaxUint256);
+        setAllowance(Infinity);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setLoading(false);
+  }
+
+  const handleUnlockMaturity = async () => {
+    setLoading(true);
+    if (provider) {
+      try {
+        const signer = provider?.getSigner();
+        await azurancePoolContractService.unlockMaturity(pool, signer);
+        // TODO: Update state to unlock maturity
+        // Close modal after unlock
+        // Fetch data update
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setLoading(false);
+  }
+
+  const handleSellInsurance = async () => {
+    setLoading(true);
+    if (provider) {
+      try {
+        const signer = provider?.getSigner();
+        await azurancePoolContractService.sellInsurance(pool, signer, ethers.utils.parseEther(amount));
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    setLoading(false);
+  }
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -45,21 +115,19 @@ const DepositModal = ({ isOpen, onOpenChange }: DepositModalTypes) => {
               <Select
                 labelPlacement="outside"
                 label="Token"
-                placeholder="Select a token"
+                placeholder={token}
                 variant="bordered"
                 size="lg"
                 radius="sm"
                 classNames={triggerStyle}
-                value={isToken}
-                onChange={(e) => {
-                  setIsToken(e.target.value);
-                }}
-                defaultSelectedKeys={[isToken]}
+                isDisabled
+                value={token}
+                disabled
                 startContent={
-                  isToken && (
+                  token && (
                     <picture>
                       <img
-                        src={`tokens/${isToken.toUpperCase()}.png`}
+                        src={`tokens/${token.toUpperCase()}.png`}
                         width={24}
                         height={24}
                         alt=""
@@ -105,30 +173,30 @@ const DepositModal = ({ isOpen, onOpenChange }: DepositModalTypes) => {
               />
               <div className="absolute right-6 top-0.5 text-xs font-normal">
                 Available: {availableAmount.toFixed(2)}
-                {isToken}
+                {token}
               </div>
 
               <div className=" border-1 border-[#E9EBED] rounded p-3 flex flex-col space-y-3">
-                <div className=" flex justify-between">
+                {/* <div className=" flex justify-between">
                   <p className="text-[#A3A3A3] font-medium text-sm">
                     Exchange Rate
                   </p>
                   <p className="text-[#0F1419] font-medium text-sm">
                     1 {isToken} = $ 1
                   </p>
-                </div>
-                <div className=" flex justify-between">
+                </div> */}
+                {/* <div className=" flex justify-between">
                   <p className="text-[#A3A3A3] font-medium text-sm">
                     Network fee
                   </p>
                   <p className="text-[#0F1419] font-medium text-sm">3.80%</p>
-                </div>
+                </div> */}
                 <div className=" flex justify-between">
                   <p className="text-[#A3A3A3] font-medium text-sm">
                     You will receive
                   </p>
                   <p className="text-[#0F1419] font-medium text-sm">
-                    0 {isToken}
+                    0 {outputToken}
                   </p>
                 </div>
               </div>
@@ -140,8 +208,10 @@ const DepositModal = ({ isOpen, onOpenChange }: DepositModalTypes) => {
                 // }}
                 color="primary"
                 className="w-full"
+                isLoading={loading}
+                onClick={allowance > +amount ? handleSellInsurance : handleApprove}
               >
-                Deposit
+                {allowance > +amount ? "Deposit" : "Approve"}
               </Button>
             </ModalFooter>
           </>

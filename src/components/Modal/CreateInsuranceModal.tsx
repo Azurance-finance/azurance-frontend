@@ -66,15 +66,21 @@ const CreateInsuranceModal = ({
     benefitMultiplier: 0,
     expiration: "",
     token: "USDT",
-    yieldPlatform: "Lido Finance",
+    yieldPlatform: "Compound",
     condition: "",
   });
   const futureDate = now.add(+insurance.expiration, "second");
   const formattedDate = futureDate.format("DD.MM.YYYY h:mm A");
+
+  // Upload image to firebase
+  const [imgFile, setImgFile] = useState<FileList>();
+  const [imgUrl, setImgUrl] = useState(null);
+
   const handleCreateInsurance = useCallback(
     async (file: FileList) => {
+
       setCreating(true);
-      uploadImage(file[0]);
+
       try {
         const multiplerDecimals = 6;
         if (provider) {
@@ -100,6 +106,7 @@ const CreateInsuranceModal = ({
           const condition = insurance.condition;
           const name = insurance.name;
           const symbol = insurance.symbol;
+
           const tx =
             await azuranceFactoryContractService.createAzuranceContract(
               contractAddress,
@@ -114,7 +121,16 @@ const CreateInsuranceModal = ({
               name,
               symbol
             );
-          // alert(`Submit transaction complete: ${tx.hash}`);
+
+          const receipt = await tx.wait();
+
+          const event = receipt.events.find((e: any) => e.event === "InsuranceCreated");
+
+          if (event) {
+            const filename = `${currentChainId}-${event.args.target}.png`;
+            uploadImage(file[0], filename);
+          }
+
           onOpenSuccess();
           onClose();
         }
@@ -126,14 +142,10 @@ const CreateInsuranceModal = ({
     },
     [provider, currentChainId, insurance]
   );
-  // Upload image to firebase
-  const [imgFile, setImgFile] = useState<FileList>();
-  const [imgUrl, setImgUrl] = useState(null);
-  console.log(imgFile);
 
-  const uploadImage = async (file: File) => {
+  const uploadImage = async (file: File, filename: string) => {
     if (!file) return;
-    const storageRef = ref(storage, `files/${file.name}`);
+    const storageRef = ref(storage, `files/${filename}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on(
@@ -190,6 +202,7 @@ const CreateInsuranceModal = ({
                           type="file"
                           id="file"
                           className="hidden"
+                          accept="image/*"
                           onChange={(e) => {
                             setImgFile(e.target.files as FileList);
                           }}
@@ -264,7 +277,6 @@ const CreateInsuranceModal = ({
                     classNames={triggerStyle}
                     value={insurance.expiration}
                     onChange={(e) => {
-                      console.log(e.target.value);
                       setInsurance((prevInsurance) => ({
                         ...prevInsurance,
                         expiration: e.target.value,
@@ -446,8 +458,8 @@ const CreateInsuranceModal = ({
         isFooter={false}
         isOpen={isOpenSuccess}
         isLoading={false}
-        title="Create insurance success fully"
-        description="Your insurance has been successfully created."
+        title="Create insurance successfully"
+        description="Your insurance has been successfully created"
         onOpenChange={onOpenChangeSuccess}
       />
     </>
