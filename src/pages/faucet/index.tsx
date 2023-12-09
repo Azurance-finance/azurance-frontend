@@ -11,7 +11,7 @@ const Faucet = () => {
       </head>
       <div>
         <TopBanner
-          title="Your Stake"
+          title="Faucet"
           description="Decentralized insurance platform that providing flexible conditions on-chain"
           isCreateInsurance={false}
         />
