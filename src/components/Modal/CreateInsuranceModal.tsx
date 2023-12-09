@@ -45,16 +45,18 @@ const CreateInsuranceModal = ({
   isOpen,
   onOpenChange,
 }: CreateInsuranceModalTypes) => {
-  const [isToken, setIsToken] = useState("USDT");
-  const [isYield, setIsYield] = useState("Lido Finance");
-  const [timeExpire, setTimeExpire] = useState("");
-
   const now = dayjs();
-
-  const futureDate = now.add(+timeExpire, "year");
-
+  const [insurance, setInsurance] = useState({
+    name: "",
+    symbol: "",
+    benefitMultiplier: 0,
+    expiration: "",
+    token: "USDT",
+    yieldPlatform: "Lido Finance",
+    condition: "",
+  });
+  const futureDate = now.add(+insurance.expiration, "year");
   const formattedDate = futureDate.format("DD.MM.YYYY h:mm A");
-  console.log("timeExpire", timeExpire);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -82,6 +84,13 @@ const CreateInsuranceModal = ({
                   labelPlacement="outside"
                   placeholder="Enter your insurance name"
                   classNames={borderedStyle}
+                  value={insurance.name}
+                  onChange={(e) => {
+                    setInsurance((prevInsurance) => ({
+                      ...prevInsurance,
+                      name: e.target.value,
+                    }));
+                  }}
                 />
                 <Input
                   key="outside"
@@ -92,6 +101,13 @@ const CreateInsuranceModal = ({
                   labelPlacement="outside"
                   placeholder="Enter your symbol"
                   classNames={borderedStyle}
+                  value={insurance.symbol}
+                  onChange={(e) => {
+                    setInsurance((prevInsurance) => ({
+                      ...prevInsurance,
+                      symbol: e.target.value,
+                    }));
+                  }}
                 />
                 <Input
                   key="outside"
@@ -105,6 +121,13 @@ const CreateInsuranceModal = ({
                   endContent="X"
                   classNames={borderedStyle}
                   type="number"
+                  value={insurance.benefitMultiplier.toString()}
+                  onChange={(e) => {
+                    setInsurance((prevInsurance) => ({
+                      ...prevInsurance,
+                      benefitMultiplier: Number(e.target.value),
+                    }));
+                  }}
                 />
                 <Select
                   items={users}
@@ -114,8 +137,14 @@ const CreateInsuranceModal = ({
                   variant="bordered"
                   size="lg"
                   radius="sm"
-                  onChange={(e) => setTimeExpire(e.target.value)}
                   classNames={triggerStyle}
+                  value={insurance.expiration}
+                  onChange={(e) => {
+                    setInsurance((prevInsurance) => ({
+                      ...prevInsurance,
+                      expiration: e.target.value,
+                    }));
+                  }}
                   renderValue={(items) => {
                     return items.map((item: any) => (
                       <div key={item.key} className="flex items-center gap-2">
@@ -147,16 +176,18 @@ const CreateInsuranceModal = ({
                   size="lg"
                   radius="sm"
                   classNames={triggerStyle}
-                  value={isToken}
                   onChange={(e) => {
-                    setIsToken(e.target.value);
+                    setInsurance((prevInsurance) => ({
+                      ...prevInsurance,
+                      token: e.target.value,
+                    }));
                   }}
-                  defaultSelectedKeys={[isToken]}
+                  defaultSelectedKeys={[insurance.token]}
                   startContent={
-                    isToken && (
+                    insurance.token && (
                       <picture>
                         <img
-                          src={`tokens/${isToken.toUpperCase()}.png`}
+                          src={`tokens/${insurance.token.toUpperCase()}.png`}
                           width={24}
                           height={24}
                           alt=""
@@ -195,14 +226,17 @@ const CreateInsuranceModal = ({
                   radius="sm"
                   classNames={triggerStyle}
                   onChange={(e) => {
-                    setIsYield(e.target.value);
+                    setInsurance((prevInsurance) => ({
+                      ...prevInsurance,
+                      yieldPlatform: e.target.value,
+                    }));
                   }}
-                  defaultSelectedKeys={[isYield]}
+                  defaultSelectedKeys={[insurance.yieldPlatform]}
                   startContent={
-                    isYield && (
+                    insurance.yieldPlatform && (
                       <picture>
                         <img
-                          src={`yield/${isYield.trim()}.png`}
+                          src={`yield/${insurance.yieldPlatform.trim()}.png`}
                           width={24}
                           height={24}
                           alt=""
@@ -242,6 +276,13 @@ const CreateInsuranceModal = ({
                   labelPlacement="outside"
                   placeholder="Url"
                   classNames={borderedStyle}
+                  value={insurance.condition}
+                  onChange={(e) => {
+                    setInsurance((prevInsurance) => ({
+                      ...prevInsurance,
+                      condition: e.target.value,
+                    }));
+                  }}
                 />
               </div>
             </ModalBody>
