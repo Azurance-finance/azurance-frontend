@@ -22,6 +22,11 @@ import {
 } from "@nextui-org/react";
 import dayjs from "dayjs";
 import React, { useCallback, useEffect, useState } from "react";
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { storage } from "@/utils/firebaseStorage";
+
 type CreateInsuranceModalTypes = {
   onOpenChange: () => void;
   isOpen: boolean;
@@ -37,12 +42,10 @@ const triggerStyle = {
   label: `text-[#808080] text-sm font-normal`,
 };
 
-
 const CreateInsuranceModal = ({
   isOpen,
   onOpenChange,
 }: CreateInsuranceModalTypes) => {
-
   const { provider } = useProvider();
   const { currentChainId } = useWalletStore();
 
@@ -64,23 +67,29 @@ const CreateInsuranceModal = ({
     setCreating(true);
 
     try {
+      await uploadImage();
       const multiplerDecimals = 6;
-
       if (provider) {
-
         const signer = provider.getSigner();
 
-        const block = await provider.getBlock('pending');
+        const block = await provider.getBlock("pending");
 
         const currentTs = Math.floor(new Date().valueOf() / 1000);
-        const maturityTs = currentTs + Number(insurance.expiration)
-        const staleTs = currentTs + Math.floor(Number(insurance.expiration) * 0.8);
+        const maturityTs = currentTs + Number(insurance.expiration);
+        const staleTs =
+          currentTs + Math.floor(Number(insurance.expiration) * 0.8);
 
-        const contractAddress = CONTRACT_ADDRESS[currentChainId]['AzruanceFactory'];
+        const contractAddress =
+          CONTRACT_ADDRESS[currentChainId]["AzruanceFactory"];
 
-        const multipler = insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
-        const maturityBlock = Math.floor(maturityTs * block.number / block.timestamp);
-        const staleBlock = Math.floor(staleTs * block.number / block.timestamp);
+        const multipler =
+          insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
+        const maturityBlock = Math.floor(
+          (maturityTs * block.number) / block.timestamp
+        );
+        const staleBlock = Math.floor(
+          (staleTs * block.number) / block.timestamp
+        );
         const asset = CONTRACT_ADDRESS[currentChainId][insurance.token];
         const fee = 0;
         const feeTo = await signer.getAddress();
@@ -88,9 +97,21 @@ const CreateInsuranceModal = ({
         const name = insurance.name;
         const symbol = insurance.symbol;
 
-        const tx = await azuranceFactoryContractService.createAzuranceContract(contractAddress, signer, multipler, maturityBlock, staleBlock, asset, fee, feeTo, condition, name, symbol);
+        const tx = await azuranceFactoryContractService.createAzuranceContract(
+          contractAddress,
+          signer,
+          multipler,
+          maturityBlock,
+          staleBlock,
+          asset,
+          fee,
+          feeTo,
+          condition,
+          name,
+          symbol
+        );
 
-        alert(`Submit transaction complete: ${tx.hash}`)
+        alert(`Submit transaction complete: ${tx.hash}`);
       }
     } catch (e) {
       console.error(e);
@@ -98,6 +119,29 @@ const CreateInsuranceModal = ({
 
     setCreating(false);
   }, [provider, currentChainId, insurance]);
+  // Upload image to firebase
+  const [imgFile, setImgFile] = useState<FileList>();
+  const [imgUrl, setImgUrl] = useState(null);
+
+  const uploadImage = async () => {
+    if (!imgFile) return;
+    const storageRef = ref(storage, `files/${imgFile[0].name}`);
+    const uploadTask = uploadBytesResumable(storageRef, imgFile[0]);
+
+    uploadTask.on(
+      "state_changed",
+      (error: any) => {
+        alert(error);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log({ downloadURL });
+
+          setImgUrl(downloadURL as any);
+        });
+      }
+    );
+  };
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -115,6 +159,15 @@ const CreateInsuranceModal = ({
             <Divider />
             <ModalBody>
               <div className=" space-y-12 overflow-y-scroll h-[420px] py-4 no-scrollbar">
+                <div>
+                  <input
+                    type="file"
+                    onChange={(e) => {
+                      setImgFile(e.target.files as FileList);
+                    }}
+                  />
+                  <span>{imgUrl && imgUrl}</span>
+                </div>
                 <Input
                   key="insurance-name"
                   size="lg"
@@ -181,7 +234,7 @@ const CreateInsuranceModal = ({
                   classNames={triggerStyle}
                   value={insurance.expiration}
                   onChange={(e) => {
-                    console.log(e.target.value)
+                    console.log(e.target.value);
                     setInsurance((prevInsurance) => ({
                       ...prevInsurance,
                       expiration: e.target.value,
@@ -263,7 +316,9 @@ const CreateInsuranceModal = ({
                   labelPlacement="outside"
                   label="Yield Platform"
                   // placeholder="Select a yield platform"
-                  description={`Estimated APY: ${(yieldPlatformObj[insurance.yieldPlatform].apy * 100).toLocaleString()}%`}
+                  description={`Estimated APY: ${(
+                    yieldPlatformObj[insurance.yieldPlatform].apy * 100
+                  ).toLocaleString()}%`}
                   variant="bordered"
                   size="lg"
                   radius="sm"
@@ -320,7 +375,11 @@ const CreateInsuranceModal = ({
                   placeholder="Contract address"
                   classNames={borderedStyle}
                   value={insurance.condition}
-                  description={<a href={LINKS.conditionContractGuide} target="_blank">Get a condition contract here</a>}
+                  description={
+                    <a href={LINKS.conditionContractGuide} target="_blank">
+                      Get a condition contract here
+                    </a>
+                  }
                   onChange={(e) => {
                     setInsurance((prevInsurance) => ({
                       ...prevInsurance,
@@ -338,7 +397,12 @@ const CreateInsuranceModal = ({
               >
                 Cancel
               </Button>
-              <Button color="primary" isLoading={creating} onPress={handleCreateInsurance} className="w-1/2">
+              <Button
+                color="primary"
+                isLoading={creating}
+                onPress={handleCreateInsurance}
+                className="w-1/2"
+              >
                 Create
               </Button>
             </ModalFooter>
