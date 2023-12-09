@@ -1,0 +1,40 @@
+query InactiveInsurance(
+  $first: Int = 100
+  $skip: Int = 0
+) {
+  insurancePools(first: $first, skip:$skip, orderBy: createdAt, orderDirection: desc, where: {status_not: 0}) {
+    id
+    status
+    condition
+    fee
+    feeDecimals
+    feeTo
+    maturityBlock
+    multiplier
+    multiplierDecimals
+    staleBlock
+    buyerValue
+    sellerValue
+    totalValue
+    buyerShares
+    sellerShares
+    totalShares
+    underlyingToken {
+      id
+      name
+      symbol
+      decimals
+    }
+    buyerToken {
+      id
+      name
+      symbol
+    }
+    sellerToken {
+      id
+      name
+      symbol
+    }
+    createdAt
+  }
+}

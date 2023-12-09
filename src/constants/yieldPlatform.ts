@@ -1,11 +1,5 @@
 export const yieldPlatforms = [
   {
-    name: "Lido Finance",
-    url: "/",
-    logo: "yield/Lido Finance.png",
-    apy: 0.038
-  },
-  {
     name: "Compound",
     url: "/",
     logo: "yield/Compound.png",
@@ -16,6 +10,12 @@ export const yieldPlatforms = [
     url: "/",
     logo: "yield/Saving DAI.png",
     apy: 0.05
+  },
+  {
+    name: "Lido Finance",
+    url: "/",
+    logo: "yield/Lido Finance.png",
+    apy: 0.038
   },
 ];
 

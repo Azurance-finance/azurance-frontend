@@ -37,7 +37,7 @@ const StatusModal = ({
                 <h3 className="my-auto text-black text-base font-semibold">
                   {title}
                 </h3>
-                <p className="my-auto text-sm font-light capitalize">
+                <p className="my-auto text-sm font-light">
                   {description}
                 </p>
               </div>

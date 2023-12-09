@@ -15,8 +15,8 @@ export const tabSelect = [
     icon: CheckCircleIcon,
   },
   {
-    label: "Expired",
-    value: "Expired",
+    label: "Ended",
+    value: "Ended",
     icon: XCircleIcon,
   },
 ];

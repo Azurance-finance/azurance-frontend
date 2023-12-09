@@ -35,19 +35,19 @@ const columnsInsurance = [
     sortable: false,
     width: "15%",
   },
-  { field: "price", headerName: "Price", sortable: false, width: "10%" },
-  { field: "benefit", headerName: "BENEFIT", sortable: true, width: "10%" },
-  {
-    field: "utilization",
-    headerName: "Utilization",
-    sortable: false,
-    width: "15%",
-  },
+  { field: "apr", headerName: "APR", sortable: true, width: "10%" },
   {
     field: "totalSupply",
     headerName: "Total Supply",
     sortable: false,
     width: "10%",
+  },
+  // { field: "price", headerName: "Price", sortable: false, width: "10%" },
+  {
+    field: "utilization",
+    headerName: "Utilization",
+    sortable: false,
+    width: "15%",
   },
   {
     field: "expiration",
