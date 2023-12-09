@@ -99,6 +99,20 @@ export default function TableFaucet({ dataTable }: any) {
                       <div className="flex justify-center">
                         <div className="px-1">
                           <Button
+                            className={`w-30 px-4 text-xs font-semibold border-1 ${
+                              isDisable
+                                ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
+                                : "bg-white text-[#0F1419] border-[#D0D5DD]"
+                            }`}
+                            onClick={onOpen}
+                            isDisabled={isDisable}
+                          >
+                            <PlusIcon width={16} height={16} />
+                            Add to wallet
+                          </Button>
+                        </div>
+                        <div className="px-1">
+                          <Button
                             className={`w-30 px-4 border-1 ${
                               isDisable
                                 ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
@@ -107,30 +121,8 @@ export default function TableFaucet({ dataTable }: any) {
                             onClick={onOpen}
                             isDisabled={isDisable}
                           >
-                            <ArrowDownTrayIcon
-                              width={16}
-                              height={16}
-                              color={`${isDisable ? "#BCBEC9" : "#FFFFFF"}`}
-                            />
+                            <ArrowDownTrayIcon width={16} height={16} />
                             Faucet
-                          </Button>
-                        </div>
-                        <div className="px-1">
-                          <Button
-                            className={`w-36 px-4 border-1 ${
-                              isDisable
-                                ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
-                                : "bg-[#0052FF] text-white border-[#0052FF]"
-                            }`}
-                            onClick={onOpen}
-                            isDisabled={isDisable}
-                          >
-                            <PlusIcon
-                              width={16}
-                              height={16}
-                              color={`${isDisable ? "#BCBEC9" : "#FFFFFF"}`}
-                            />
-                            Add to wallet
                           </Button>
                         </div>
                       </div>
