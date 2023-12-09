@@ -189,6 +189,7 @@ const StakeModal = ({
         title={`You are now ${wording} ${amount} ${token1}`}
         description={`${wording} ${amount} ${token1}. You will receive ${calculateAmount} ${token2}`}
         onOpenChange={onOpenChangeStack}
+        isFooter={true}
       />
     </>
   );

@@ -12,24 +12,34 @@ const azuranceFactoryContract = (
 const createAzuranceContract = async (
   contractAddress: string,
   provider: ethers.Signer | ethers.providers.Provider,
-  multiplier: number | ethers.BigNumber, 
+  multiplier: number | ethers.BigNumber,
   maturityBlock: number | ethers.BigNumber,
-  staleBlock: number | ethers.BigNumber, 
-  asset: string, 
-  fee: number | ethers.BigNumber, 
-  feeTo: string, 
-  condition: string, 
-  name: string, 
-  symbol: string,
+  staleBlock: number | ethers.BigNumber,
+  asset: string,
+  fee: number | ethers.BigNumber,
+  feeTo: string,
+  condition: string,
+  name: string,
+  symbol: string
 ) => {
   const contract = azuranceFactoryContract(contractAddress, provider);
-  const tx = await contract.createAzuranceContract(multiplier, maturityBlock, staleBlock, asset, fee, feeTo, condition, name, symbol);
+  const tx = await contract.createAzuranceContract(
+    multiplier,
+    maturityBlock,
+    staleBlock,
+    asset,
+    fee,
+    feeTo,
+    condition,
+    name,
+    symbol
+  );
   await tx.wait();
   return tx;
 };
 
 const azuranceFactoryContractService = {
   azuranceFactoryContract,
-  createAzuranceContract
+  createAzuranceContract,
 };
 export default azuranceFactoryContractService;

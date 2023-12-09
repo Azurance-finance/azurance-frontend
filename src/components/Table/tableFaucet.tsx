@@ -6,9 +6,12 @@ import { ArrowDownTrayIcon, PlusIcon } from "@heroicons/react/24/outline";
 import StakeModal from "../Modal/StakeModal";
 import { Search } from "../Search/search";
 import { IToken } from "../../../types/token";
+import FaucetModal from "../Modal/FaucetModal";
 
 export default function TableFaucet({ dataTable }: any) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [isAdding, setIsAdding] = useState(false);
+  const [token, setToken] = useState<string>("");
 
   const [search, setSearch] = useState("");
 
@@ -26,6 +29,28 @@ export default function TableFaucet({ dataTable }: any) {
     }
     return tokensList;
   }, [search, tokensList]);
+  const handleAddFaucet = async (token: IToken) => {
+    setIsAdding(true);
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({
+          method: "wallet_watchAsset",
+          params: {
+            type: "ERC20",
+            options: {
+              address: token.tokenAddress,
+              symbol: token.tokenSymbol,
+              decimals: token.tokenDecimal,
+              image: token.tokenLogo,
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    setIsAdding(false);
+  };
 
   return (
     <div className="bg-white w-full mt-5 rounded-xl ">
@@ -99,38 +124,34 @@ export default function TableFaucet({ dataTable }: any) {
                       <div className="flex justify-center">
                         <div className="px-1">
                           <Button
-                            className={`w-30 px-4 border-1 ${
+                            isLoading={isAdding}
+                            className={`w-30 px-4 text-sm font-semibold border-1 ${
                               isDisable
                                 ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
-                                : "bg-[#0052FF] text-white border-[#0052FF]"
+                                : "bg-white text-[#0F1419] border-[#D0D5DD]"
                             }`}
-                            onClick={onOpen}
+                            onClick={() => handleAddFaucet(item)}
                             isDisabled={isDisable}
                           >
-                            <ArrowDownTrayIcon
-                              width={16}
-                              height={16}
-                              color={`${isDisable ? "#BCBEC9" : "#FFFFFF"}`}
-                            />
-                            Faucet
+                            <PlusIcon width={16} height={16} />
+                            Add token
                           </Button>
                         </div>
                         <div className="px-1">
                           <Button
-                            className={`w-36 px-4 border-1 ${
+                            className={`w-30 px-4 border-1 text-sm ${
                               isDisable
                                 ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
                                 : "bg-[#0052FF] text-white border-[#0052FF]"
                             }`}
-                            onClick={onOpen}
+                            onClick={() => {
+                              setToken(item.tokenName);
+                              onOpen();
+                            }}
                             isDisabled={isDisable}
                           >
-                            <PlusIcon
-                              width={16}
-                              height={16}
-                              color={`${isDisable ? "#BCBEC9" : "#FFFFFF"}`}
-                            />
-                            Add to wallet
+                            <ArrowDownTrayIcon width={16} height={16} />
+                            Faucet
                           </Button>
                         </div>
                       </div>
@@ -140,15 +161,11 @@ export default function TableFaucet({ dataTable }: any) {
             : null}
         </tbody>
       </table>
-      <StakeModal
-        onOpenChange={onOpenChange}
+      <FaucetModal
         isOpen={isOpen}
-        token1="DAI"
-        token2="sDAI"
-        header="Claim"
-        description="After you successfully submit your ETH claim request
-your ETH will be frozen in your wallet, and you will be
-able to receive rewards."
+        header="Faucet"
+        onOpenChange={onOpenChange}
+        token={token}
       />
     </div>
   );
