@@ -1,5 +1,6 @@
 import { tokens } from "@/constants/token";
 import { useProvider } from "@/hooks/provider.hook";
+import azurancePoolContractService from "@/services/contracts/azurancePoolContract";
 import tokenContractService from "@/services/contracts/tokenContract.service";
 import {
   Button,
@@ -30,10 +31,13 @@ type DepositModalTypes = {
   token: string,
   tokenAddress: string,
   outputToken: string,
+  pool: string
 };
-const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken }: DepositModalTypes) => {
+const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken, pool }: DepositModalTypes) => {
   const [amount, setAmount] = useState("");
   const [availableAmount, setAvailableAmount] = useState(0);
+  const [allowance, setAllowance] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const { provider } = useProvider();
 
@@ -43,12 +47,58 @@ const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken }
       if (provider) {
         const signer = provider?.getSigner();
         const address = await signer.getAddress();
+
         const balance = await tokenContractService.getBalance(tokenAddress, provider, address);
-        setAvailableAmount(+balance)
+        const allowance = await tokenContractService.getAllowance(tokenAddress, provider, address, pool);
+        setAvailableAmount(+balance);
+        setAllowance(+allowance)
       }
     })()
 
   }, [tokenAddress, provider]);
+
+  const handleApprove = async () => {
+    setLoading(true);
+    if (provider) {
+      try {
+        const signer = provider?.getSigner();
+        await tokenContractService.approve(tokenAddress, signer, pool, ethers.constants.MaxUint256);
+        setAllowance(Infinity);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setLoading(false);
+  }
+
+  const handleUnlockMaturity = async () => {
+    setLoading(true);
+    if (provider) {
+      try {
+        const signer = provider?.getSigner();
+        await azurancePoolContractService.unlockMaturity(pool, signer);
+        // TODO: Update state to unlock maturity
+        // Close modal after unlock
+        // Fetch data update
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setLoading(false);
+  }
+
+  const handleSellInsurance = async () => {
+    setLoading(true);
+    if (provider) {
+      try {
+        const signer = provider?.getSigner();
+        await azurancePoolContractService.sellInsurance(pool, signer, ethers.utils.parseEther(amount));
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    setLoading(false);
+  }
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -158,8 +208,10 @@ const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken }
                 // }}
                 color="primary"
                 className="w-full"
+                isLoading={loading}
+                onClick={allowance > +amount ? handleSellInsurance : handleApprove}
               >
-                Deposit
+                {allowance > +amount ? "Deposit" : "Approve"}
               </Button>
             </ModalFooter>
           </>

@@ -30,6 +30,7 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
   const [isDisable, setIsDisable] = useState(false);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
 
   const [search, setSearch] = useState("");
 
@@ -179,7 +180,11 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
             : null}
         </tbody>
       </table>
-      <DepositModal onOpenChange={onOpenChange} isOpen={isOpen} token={insuranceList[selectedIndex].tokenSymbol} tokenAddress={insuranceList[selectedIndex].tokenAddress} outputToken={insuranceList[selectedIndex].sellerToken} />
+      {
+        selectedInsurance && (
+          <DepositModal onOpenChange={onOpenChange} isOpen={isOpen} token={selectedInsurance.tokenSymbol} tokenAddress={selectedInsurance.tokenAddress} outputToken={selectedInsurance.sellerToken} pool={selectedInsurance.id} />
+        )
+      }
     </div>
   );
 }
