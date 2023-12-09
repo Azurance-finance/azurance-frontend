@@ -176,8 +176,10 @@ const CreateInsuranceModal = ({
                     <div className="text-[#5B616E] text-sm font-normal mb-1.5">
                       Image Insurance
                     </div>
-                    <div className=" flex justify-between border-1 border-[#D0D5DD] p-2.5 rounded-lg">
-                      <div>{imgUrl ? imgUrl : "No file chosen"}</div>
+                    <div className=" flex justify-between border-1 border-[#D0D5DD] px-2.5 py-2 rounded-lg ">
+                      <div className="my-auto">
+                        {imgFile ? imgFile[0].name : "No file chosen"}
+                      </div>
                       <div>
                         <label htmlFor="file">
                           <div className=" rounded-lg text-xs text-[#0F1419] font-normal border-1 border-[#D0D5DD] bg-[#F7F9F9] px-2.5 py-1.5 cursor-pointer">
@@ -195,6 +197,7 @@ const CreateInsuranceModal = ({
                       </div>
                     </div>
                   </div>
+
                   <Input
                     key="insurance-name"
                     size="lg"
