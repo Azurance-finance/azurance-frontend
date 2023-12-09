@@ -1,28 +1,40 @@
 export const CHAINS = {
-  "0x66eed": {
-    chainId: "0x66eed",
-    rpcUrls: ["https://goerli-rollup.arbitrum.io/rpc"],
-    chainName: "Arbitrum Goerli",
-    iconPath: "/chain/polygon.png",
+  "0xa869": {
+    chainId: "0xa869",
+    rpcUrls: ["https://api.avax-test.network/ext/bc/C/rpc"],
+    chainName: "Avalanche Fuji Testnet",
+    iconPath: "/chain/icon-avax.png",
     nativeCurrency: {
-      name: "Arbitrum Goerli",
-      symbol: "AGOR",
+      name: "Avalanche Fuji Testnet",
+      symbol: "AVAX",
       decimals: 18,
     },
-    blockExplorerUrls: ["https://goerli.arbiscan.io"],
+    blockExplorerUrls: ["https://testnet.snowtrace.io"],
   },
-  "0x13881": {
-    chainId: "0x13881",
-    rpcUrls: ["https://endpoints.omniatech.io/v1/matic/mumbai/public"],
-    chainName: "Mumbai",
-    iconPath: "/chain/polygon.png",
-    nativeCurrency: {
-      name: "Mumbai",
-      symbol: "MATIC",
-      decimals: 18,
-    },
-    blockExplorerUrls: ["https://mumbai.polygonscan.com/"],
-  },
+  // "0x66eed": {
+  //   chainId: "0x66eed",
+  //   rpcUrls: ["https://goerli-rollup.arbitrum.io/rpc"],
+  //   chainName: "Arbitrum Goerli",
+  //   iconPath: "/chain/polygon.png",
+  //   nativeCurrency: {
+  //     name: "Arbitrum Goerli",
+  //     symbol: "AGOR",
+  //     decimals: 18,
+  //   },
+  //   blockExplorerUrls: ["https://goerli.arbiscan.io"],
+  // },
+  // "0x13881": {
+  //   chainId: "0x13881",
+  //   rpcUrls: ["https://endpoints.omniatech.io/v1/matic/mumbai/public"],
+  //   chainName: "Mumbai",
+  //   iconPath: "/chain/polygon.png",
+  //   nativeCurrency: {
+  //     name: "Mumbai",
+  //     symbol: "MATIC",
+  //     decimals: 18,
+  //   },
+  //   blockExplorerUrls: ["https://mumbai.polygonscan.com/"],
+  // },
 
   // "0x44d": {
   //   chainId: "0x44d",
