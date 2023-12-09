@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import WalletConnect from "../Wallet";
 import { MENU } from "@/constants/menu";
+import NextLink from 'next/link';
 
 export default function TopNavbar() {
   const router = useRouter();
@@ -57,8 +58,10 @@ export default function TopNavbar() {
             isActive={router.pathname === menu.path}
             className="mx-1"
           >
-            <Link href={menu.path} className="text-[#0F1419] text-sm">
-              {menu.name}
+            <Link className="text-[#0F1419] text-sm">
+              <NextLink href={menu.path} className="flex-1 h-full flex items-center">
+                {menu.name}
+              </NextLink>
             </Link>
           </NavbarItem>
         ))}

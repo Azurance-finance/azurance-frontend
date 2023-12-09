@@ -1,22 +1,25 @@
+import TableInsurance from "@/components/Table/tableInsurance";
 import TopBanner from "@/components/TopBanner";
-import Table from "../components/Table/table";
 import { azurance } from "@/constants/mockTableData";
+import React from "react";
 
-export default function Home() {
+const Liquidity = () => {
   return (
     <>
       <head>
-        <title>Azurance - Products</title>
+        <title>Azurance - Liquidity</title>
       </head>
       <div>
         <TopBanner
-          title="Azurance"
+          title="Your Insurance"
           description="Decentralized insurance platform that providing flexible conditions on-chain"
-          isCreateInsurance={false}
+          isCreateInsurance={true}
         />
-        <Table dataTable={azurance} />
+        <TableInsurance dataTable={azurance} />
       </div>
     </>
 
   );
-}
+};
+
+export default Liquidity;

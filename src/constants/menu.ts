@@ -16,21 +16,21 @@ export const FEED_TYPE_MENU = {
 
 export const MENU = [
   {
-    name: "Dashboard",
+    name: "Products",
     // icon: HomeIcon,
     // solidIcon: SolidHomeIcon,
     path: "/",
   },
   {
-    name: "Stake",
-    // icon: UserIcon,
-    // solidIcon: SolidUserIcon,
-    path: "/stake",
-  },
-  {
-    name: "Insurance",
+    name: "Liquidity",
     // icon: BellIcon,
     // solidIcon: SolidBellIcon,
-    path: "/insurance",
+    path: "/liquidity",
+  },
+  {
+    name: "Claim",
+    // icon: UserIcon,
+    // solidIcon: SolidUserIcon,
+    path: "/claim",
   },
 ];
