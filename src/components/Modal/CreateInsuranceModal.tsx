@@ -1,6 +1,12 @@
+import { CONTRACT_ADDRESS } from "@/constants/address.constant";
 import { LINKS } from "@/constants/links.constant";
+import { times } from "@/constants/time.constant";
 import { tokens } from "@/constants/token";
-import { yieldPlatformObj, yieldPlatforms } from "@/constants/yieldPlateform";
+import { yieldPlatformObj, yieldPlatforms } from "@/constants/yieldPlatform";
+import { useCometh } from "@/hooks/cometh.hook";
+import { useProvider } from "@/hooks/provider.hook";
+import azuranceFactoryContractService from "@/services/contracts/azuranceFactoryContract";
+import { useWalletStore } from "@/store/wallet/wallet.store";
 import {
   Avatar,
   Button,
@@ -15,7 +21,7 @@ import {
   SelectItem,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 type CreateInsuranceModalTypes = {
   onOpenChange: () => void;
   isOpen: boolean;
@@ -30,23 +36,18 @@ const triggerStyle = {
   trigger: `border-1 border-[#D0D5DD]`,
   label: `text-[#808080] text-sm font-normal`,
 };
-export const users = [
-  {
-    id: 1,
-    time: "1 year",
-    timeExpire: "1",
-  },
-  {
-    id: 2,
-    time: "2 years",
-    timeExpire: "2",
-  },
-];
+
+
 const CreateInsuranceModal = ({
   isOpen,
   onOpenChange,
 }: CreateInsuranceModalTypes) => {
+
+  const { provider } = useProvider();
+  const { currentChainId } = useWalletStore();
+
   const now = dayjs();
+  const [creating, setCreating] = useState(false);
   const [insurance, setInsurance] = useState({
     name: "",
     symbol: "",
@@ -56,8 +57,47 @@ const CreateInsuranceModal = ({
     yieldPlatform: "Lido Finance",
     condition: "",
   });
-  const futureDate = now.add(+insurance.expiration, "year");
+  const futureDate = now.add(+insurance.expiration, "second");
   const formattedDate = futureDate.format("DD.MM.YYYY h:mm A");
+
+  const handleCreateInsurance = useCallback(async () => {
+    setCreating(true);
+
+    try {
+      const multiplerDecimals = 6;
+
+      if (provider) {
+
+        const signer = provider.getSigner();
+
+        const block = await provider.getBlock('pending');
+
+        const currentTs = Math.floor(new Date().valueOf() / 1000);
+        const maturityTs = currentTs + Number(insurance.expiration)
+        const staleTs = currentTs + Math.floor(Number(insurance.expiration) * 0.8);
+
+        const contractAddress = CONTRACT_ADDRESS[currentChainId]['AzruanceFactory'];
+
+        const multipler = insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
+        const maturityBlock = Math.floor(maturityTs * block.number / block.timestamp);
+        const staleBlock = Math.floor(staleTs * block.number / block.timestamp);
+        const asset = CONTRACT_ADDRESS[currentChainId][insurance.token];
+        const fee = 0;
+        const feeTo = await signer.getAddress();
+        const condition = insurance.condition;
+        const name = insurance.name;
+        const symbol = insurance.symbol;
+
+        const tx = await azuranceFactoryContractService.createAzuranceContract(contractAddress, signer, multipler, maturityBlock, staleBlock, asset, fee, feeTo, condition, name, symbol);
+
+        alert(`Submit transaction complete: ${tx.hash}`)
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    setCreating(false);
+  }, [provider, currentChainId, insurance]);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -76,7 +116,7 @@ const CreateInsuranceModal = ({
             <ModalBody>
               <div className=" space-y-12 overflow-y-scroll h-[420px] py-4 no-scrollbar">
                 <Input
-                  key="outside"
+                  key="insurance-name"
                   size="lg"
                   radius="sm"
                   type="name"
@@ -94,7 +134,7 @@ const CreateInsuranceModal = ({
                   }}
                 />
                 <Input
-                  key="outside"
+                  key="insurance-symbol"
                   size="lg"
                   radius="sm"
                   variant="bordered"
@@ -111,7 +151,7 @@ const CreateInsuranceModal = ({
                   }}
                 />
                 <Input
-                  key="outside"
+                  key="multiplier"
                   size="lg"
                   radius="sm"
                   variant="bordered"
@@ -131,7 +171,7 @@ const CreateInsuranceModal = ({
                   }}
                 />
                 <Select
-                  items={users}
+                  items={times}
                   labelPlacement="outside"
                   label="Insurance Expiration"
                   placeholder="Select date expiration"
@@ -141,6 +181,7 @@ const CreateInsuranceModal = ({
                   classNames={triggerStyle}
                   value={insurance.expiration}
                   onChange={(e) => {
+                    console.log(e.target.value)
                     setInsurance((prevInsurance) => ({
                       ...prevInsurance,
                       expiration: e.target.value,
@@ -159,11 +200,11 @@ const CreateInsuranceModal = ({
                     ));
                   }}
                 >
-                  {(user) => (
-                    <SelectItem key={user.id} textValue={user.timeExpire}>
+                  {(time) => (
+                    <SelectItem key={time.timeExpire} textValue={time.time}>
                       <div className="flex gap-2 items-center">
                         <div className="flex w-full justify-between">
-                          <p className="text-small">{user.time}</p>
+                          <p className="text-small">{time.time}</p>
                         </div>
                       </div>
                     </SelectItem>
@@ -269,7 +310,7 @@ const CreateInsuranceModal = ({
                   ))}
                 </Select>
                 <Input
-                  key="outside"
+                  key="condition"
                   size="lg"
                   radius="sm"
                   type="name"
@@ -297,7 +338,7 @@ const CreateInsuranceModal = ({
               >
                 Cancel
               </Button>
-              <Button color="primary" onPress={onClose} className="w-1/2">
+              <Button color="primary" isLoading={creating} onPress={handleCreateInsurance} className="w-1/2">
                 Create
               </Button>
             </ModalFooter>

@@ -1,4 +1,4 @@
-import { CHAINS } from "@/constants/chian.constant";
+import { CHAINS } from "@/constants/chain.constant";
 
 interface Chain {
   chainName: string;

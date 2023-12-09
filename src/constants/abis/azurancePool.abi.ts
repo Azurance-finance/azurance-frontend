@@ -33,7 +33,7 @@ export const AZURANCE_POOL_ABI = [
         "internalType": "address"
       },
       {
-        "name": "checker_",
+        "name": "condition_",
         "type": "address",
         "internalType": "address"
       },
@@ -92,7 +92,7 @@ export const AZURANCE_POOL_ABI = [
   },
   {
     "type": "function",
-    "name": "checker",
+    "name": "condition",
     "inputs": [],
     "outputs": [
       {

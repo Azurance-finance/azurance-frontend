@@ -1,5 +1,5 @@
 import { mappingChainInfo } from "@/configs/chain.config";
-import { CHAINS } from "@/constants/chian.constant";
+import { CHAINS } from "@/constants/chain.constant";
 import { useMetaMask } from "@/hooks/metamask.hook";
 import { WalletType } from "@/store/wallet/wallet.type";
 import { useWalletStore } from "@/store/wallet/wallet.store";
