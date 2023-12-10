@@ -209,6 +209,7 @@ export default function TableInsurance() {
                             src={imageUrls[index] || "/insurances/AIA.png"}
                             width="36px"
                             height="36px"
+                            className="rounded-full"
                             alt="logo-chain"
                           />
                         </picture>

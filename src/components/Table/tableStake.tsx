@@ -44,7 +44,6 @@ export default function TableStake() {
   const [sellerBalances, setSellerBalances] = useState<number[]>([]);
 
   const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
-  console.log({ Select: insuranceList[selectedIndex]?.symbol });
 
   const getDownloadURLWithBackup = useCallback(
     async (chainId: string, address: string) => {
@@ -256,6 +255,7 @@ export default function TableStake() {
                             src={imageUrls[index] || "/insurances/AIA.png"}
                             width="36px"
                             height="36px"
+                            className="rounded-full"
                             alt="logo-chain"
                           />
                         </picture>
@@ -276,6 +276,7 @@ export default function TableStake() {
                             src={`/tokens/${item.underlyingToken.symbol}.png`}
                             width="36px"
                             height="36px"
+                            className="rounded-full"
                             alt="logo-chain"
                           />
                         </picture>
