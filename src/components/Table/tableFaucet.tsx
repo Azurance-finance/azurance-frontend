@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { columnsToken } from "@/constants/mockTableData";
 import { formatFiatNumber, formatDecimal } from "@/utils/formatNumber";
 import { Button, useDisclosure } from "@nextui-org/react";
@@ -7,9 +7,19 @@ import StakeModal from "../Modal/StakeModal";
 import { Search } from "../Search/search";
 import { IToken } from "../../../types/token";
 import FaucetModal from "../Modal/FaucetModal";
+import { useProvider } from "@/hooks/provider.hook";
+import tokenContractService from "@/services/contracts/tokenContract.service";
+import { useWalletStore } from "@/store/wallet/wallet.store";
+import { formatEther } from "ethers/lib/utils";
+import { ethers } from "ethers";
+import axios from "axios";
+import { ADDRESS_FROM_API } from "@/constants/addressTokenETH.constant";
 
 export default function TableFaucet({ dataTable }: any) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [balance, setBalance] = useState<string[]>([]);
+  const { walletAddress } = useWalletStore();
+
   const [isAdding, setIsAdding] = useState(false);
   const [token, setToken] = useState<string>("");
 
@@ -17,6 +27,7 @@ export default function TableFaucet({ dataTable }: any) {
 
   const [isDisable, setIsDisable] = useState(false);
   const [tokensList, setTokensList] = useState(dataTable);
+  const { provider } = useProvider();
 
   const data = useMemo(() => {
     if (search) {
@@ -29,7 +40,7 @@ export default function TableFaucet({ dataTable }: any) {
     }
     return tokensList;
   }, [search, tokensList]);
-  
+
   const handleAddFaucet = async (token: IToken) => {
     setIsAdding(true);
     try {
@@ -52,6 +63,67 @@ export default function TableFaucet({ dataTable }: any) {
     }
     setIsAdding(false);
   };
+  const getDownloadURLWithBackup = useCallback(
+    async (tokenAddr: string, provider: ethers.providers.Web3Provider) => {
+      try {
+        return await tokenContractService.getBalance(
+          tokenAddr,
+          provider,
+          walletAddress
+        );
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (provider) {
+        const promises = tokensList.map((tokenAddr: any) =>
+          tokenContractService.getBalance(
+            tokenAddr.tokenAddress,
+            provider,
+            walletAddress
+          )
+        );
+        Promise.all(promises).then((result) => setBalance(result));
+      }
+    })();
+  }, [tokensList, provider, walletAddress]);
+  const [addr, setAddr] = useState<string[]>([]);
+
+  const getExchangeData = async (addressToken: string) => {
+    try {
+      const res = await axios.get(
+        `https://api.diadata.org/v1/assetQuotation/Ethereum/${addressToken}`
+      );
+      return res.data.Price;
+    } catch (error) {
+      console.error("Error fetching :", error);
+      return null;
+    }
+  };
+  const checkSymbolToFetch = (symbol: string) => {
+    if (symbol === "USDT") {
+      return ADDRESS_FROM_API?.USDT;
+    } else if (symbol === "DAI") {
+      return ADDRESS_FROM_API?.DAI;
+    } else if (symbol === "WETH") {
+      return ADDRESS_FROM_API?.WETH;
+    }
+  };
+  useEffect(() => {
+    const dataList = tokensList?.map((tokenAddr: any) => {
+      const addrToken = checkSymbolToFetch(tokenAddr.tokenSymbol);
+      if (addrToken) {
+        return getExchangeData(addrToken);
+      }
+    });
+
+    Promise.all(dataList).then((result) => setAddr(result));
+  }, [tokensList]);
 
   return (
     <div className="bg-white w-full mt-5 rounded-xl ">
@@ -115,10 +187,14 @@ export default function TableFaucet({ dataTable }: any) {
 
                     <td className="text-start pl-16">
                       <div className="text-[#0F1419] text-sm">
-                        {formatDecimal(1652)}
+                        {walletAddress ? balance[index] : "0"}
                       </div>
                       <div className="text-[#A3A3A3] text-xs">
-                        {formatFiatNumber(1652)}
+                        {walletAddress
+                          ? formatFiatNumber(
+                              Number(addr[index]) * Number(balance[index])
+                            )
+                          : formatFiatNumber(0)}
                       </div>
                     </td>
 
