@@ -302,6 +302,7 @@ export default function TableStake() {
             : null}
         </tbody>
       </table>
+      {/* TODO: Create a new modal to handle token withdrawal */}
       {
         selectedInsurance && (
           <StakeModal
