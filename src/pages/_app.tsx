@@ -14,6 +14,7 @@ import {
 import { graphExchange } from "@graphprotocol/client-urql";
 import * as GraphClient from "../../.graphclient";
 import { graphUrl } from "@/configs/graph.config";
+import { ThemeProvider } from "@material-tailwind/react";
 
 const graphClient = createGraphClient({
   url: graphUrl,
@@ -26,13 +27,15 @@ export default function App({ Component, pageProps }: AppProps) {
       <GraphPovider value={graphClient}>
         <ApolloClientProvider>
           <NextUIProvider>
-            <MetaMaskProvider>
-              <ComethProvider>
-                <MainLayout>
-                  <Component {...pageProps} />
-                </MainLayout>
-              </ComethProvider>
-            </MetaMaskProvider>
+            <ThemeProvider>
+              <MetaMaskProvider>
+                <ComethProvider>
+                  <MainLayout>
+                    <Component {...pageProps} />
+                  </MainLayout>
+                </ComethProvider>
+              </MetaMaskProvider>
+            </ThemeProvider>
           </NextUIProvider>
         </ApolloClientProvider>
       </GraphPovider>
