@@ -385,12 +385,12 @@ export default function TableStake() {
             : null}
         </tbody>
       </table>
-      {/* TODO: Create a new modal to handle token withdrawal */}
       {selectedInsurance && (
         <WithdrawModal
           isOpen={isOpen}
           insurance={selectedInsurance}
           header="Buy"
+          showCheckRequest={filter === "Ongoing"}
           onOpenChange={onOpenChange}
           onInsuranceUpdate={fetchInsurances}
           onClose={onClose}

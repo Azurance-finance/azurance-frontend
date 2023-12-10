@@ -29,6 +29,7 @@ type WithdrawModalTypes = {
   isOpen: boolean;
   insurance: InsuranceType;
   description?: string;
+  showCheckRequest: boolean;
   onOpenChange: () => void;
   onInsuranceUpdate: () => void;
   onClose: () => void;
@@ -43,6 +44,7 @@ const WithdrawModal = ({
   header,
   insurance,
   description,
+  showCheckRequest,
   onOpenChange,
   onInsuranceUpdate,
   onClose,
@@ -59,6 +61,10 @@ const WithdrawModal = ({
   const { currentChainId } = useWalletStore();
   const [imageUrl, setImageUrls] = useState<string>();
 
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalContent, setModalContent] = useState("");
+  const [modalLoading, setModalLoading] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const {
@@ -72,8 +78,10 @@ const WithdrawModal = ({
     onOpen: onOpenStack,
     onOpenChange: onOpenChangeStack,
   } = useDisclosure();
+
   const {
     onOpen: onOpenUnlock,
+    onClose: onCloseUnlock,
     onOpenChange: onOpenChangeUnlock,
     isOpen: isOpenUnlockModal,
   } = useDisclosure();
@@ -160,20 +168,6 @@ const WithdrawModal = ({
     }
   };
 
-  const handleUnlockMaturity = async () => {
-    if (provider) {
-      try {
-        const signer = provider?.getSigner();
-        await azurancePoolContractService.unlockMaturity(insurance.id, signer);
-        onInsuranceUpdate();
-        onOpenUnlock();
-        onClose();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  };
-
   const handleWithdraw = async () => {
     if (provider) {
       try {
@@ -196,18 +190,42 @@ const WithdrawModal = ({
 
   const handleCheckUnlockClaim = async () => {
     if (provider) {
+
+      setModalLoading(true);
+      setModalTitle("Your request is being processed");
+      setModalContent("Please wait for transaction to be completed.");
+      onOpenUnlock();
+
       try {
         const signer = provider?.getSigner();
-        await azurancePoolContractService.checkUnlockClaim(
-          insurance.id,
-          signer
-        );
+        if (now > insurance.maturityTime) {
+          await azurancePoolContractService.unlockMaturity(
+            insurance.id,
+            signer
+          );
+        } else {
+          await azurancePoolContractService.checkUnlockClaim(
+            insurance.id,
+            signer
+          );
+        }
+
+        setModalLoading(false);
+        setModalTitle("Your request has been completed");
+        setModalContent("Please wait for the request to be settled and check it again soon.");
+
         onInsuranceUpdate();
-        onOpenUnlock();
-        onClose();
-      } catch (e) {
-        console.error(e);
+      } catch (e: any) {
+        if ((e as any).code === "ACTION_REJECTED") {
+          onCloseUnlock();
+        } else {
+          setModalTitle("Something went wrong");
+          setModalContent("Please try again later.");
+        }
+
       }
+
+      setModalLoading(false);
     }
   };
 
@@ -453,14 +471,19 @@ const WithdrawModal = ({
                   >
                     {getButtonMessage()}
                   </Button>
-                  {/* <div
-                    className="flex justify-center cursor-pointer mt-2"
-                    onClick={handleCheckUnlockClaim}
-                  >
-                    <p className="text-[#A3A3A3] font-medium  text-xs">
-                      You can request for claim by clicking here
-                    </p>
-                  </div> */}
+                  {
+                    showCheckRequest && (
+                      <div
+                        className="flex justify-center cursor-pointer mt-2"
+                        onClick={handleCheckUnlockClaim}
+                      >
+                        <p className="text-[#A3A3A3] font-medium  text-xs">
+                          You can request for claim by clicking here
+                        </p>
+                      </div>
+                    )
+                  }
+
                 </div>
               </ModalFooter>
             </>
@@ -477,11 +500,11 @@ const WithdrawModal = ({
       />
       <StatusModal
         isOpen={isOpenUnlockModal}
-        isLoading={false}
+        isLoading={modalLoading}
         onOpenChange={onOpenChangeUnlock}
-        isFooter={true}
-        title="Your liquidity has expired"
-        description="Your liquidity has been expired. Please refresh to the Claim page for claim token."
+        isFooter={false}
+        title={modalTitle}
+        description={modalContent}
       />
     </>
   );
