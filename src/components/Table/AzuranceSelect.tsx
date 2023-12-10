@@ -10,7 +10,7 @@ import {
 interface AzuranceSelectProps {
   tabSelect: Array<any>;
   filter: string;
-  setFilter: React.Dispatch<React.SetStateAction<string>>;
+  setFilter: (filter: string) => void;
 }
 
 export function AzuranceSelcet({

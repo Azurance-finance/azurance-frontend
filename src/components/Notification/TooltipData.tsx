@@ -1,20 +1,24 @@
+import { formatDecimal } from "@/utils/formatNumber";
 import { Divider, Slider } from "@nextui-org/react";
 import React from "react";
+
 type TooltipDataTypes = {
-  percent: number;
+  totalBuyer: number,
+  totalSeller: number,
+  utilization: number
 };
-const TooltipData = ({ percent }: TooltipDataTypes) => {
+const TooltipData = ({ totalBuyer, totalSeller, utilization }: TooltipDataTypes) => {
   return (
     <div className=" w-[260px] p-2">
       <div className="flex justify-between text-sm text-[#A3A3A3] font-bold">
         <p>Percentage</p>
-        <p className=" text-[#0F1419] text-sm font-bold">{percent}%</p>
+        <p className=" text-[#0F1419] text-sm font-bold">{utilization}%</p>
       </div>
       <Slider
         aria-label="Player progress"
         color="primary"
         hideThumb={true}
-        value={percent}
+        value={utilization}
         className="w-full my-1"
         size="sm"
       />
@@ -24,7 +28,7 @@ const TooltipData = ({ percent }: TooltipDataTypes) => {
           <p className=" text-xs font-medium text-[#A3A3A3]">Total Buyer</p>
         </div>
         <div className=" text-[#0F1419] text-xs font-medium">
-          392,584,520.15
+          {formatDecimal(totalBuyer)}
         </div>
       </div>
       <Divider className="my-2" />
@@ -34,7 +38,7 @@ const TooltipData = ({ percent }: TooltipDataTypes) => {
           <p className=" text-xs font-medium text-[#A3A3A3]">Total Seller</p>
         </div>
         <div className=" text-[#0F1419] text-xs font-medium">
-          392,584,520.15
+          {formatDecimal(totalSeller)}
         </div>
       </div>
     </div>
