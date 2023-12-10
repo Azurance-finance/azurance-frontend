@@ -97,6 +97,7 @@ export default function TableFaucet({ dataTable }: any) {
                             src={item.tokenLogo}
                             width="36px"
                             height="36px"
+                            className="rounded-full"
                             alt="logo-chain"
                           />
                         </picture>
