@@ -134,6 +134,19 @@ const StakeModal = ({
     }
   }
 
+  const handleCheckUnlockClaim = async () => {
+    if (provider) {
+      try {
+        const signer = provider?.getSigner();
+        await azurancePoolContractService.checkUnlockClaim(insurance.id, signer);
+        onInsuranceUpdate();
+        // TODO: Show modal successfully unlock and suggest to navigate to "claim" page
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
   const calculateShare = () => {
     const totalShares = +ethers.utils.formatEther(insurance.totalShares);
     const totalValue = +ethers.utils.formatEther(insurance.totalValue);
@@ -290,16 +303,21 @@ const StakeModal = ({
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button
-                  onClick={() => {
-                    handleBuy();
-                  }}
-                  color="primary"
-                  className="w-full"
-                  isLoading={loading}
-                >
-                  {getButtonMessage()}
-                </Button>
+                <div className="flex-1">
+                  <Button
+                    onClick={() => {
+                      handleBuy();
+                    }}
+                    color="primary"
+                    className="w-full mb-1"
+                    isLoading={loading}
+                  >
+                    {getButtonMessage()}
+                  </Button>
+                  <div className="flex justify-center cursor-pointer" onClick={handleCheckUnlockClaim}>
+                    <p className="text-[#A3A3A3] font-s text-sm">You can request for claim by clicking here</p>
+                  </div>
+                </div>
               </ModalFooter>
             </>
           )}
