@@ -17,6 +17,8 @@ import { storage } from "@/utils/firebaseStorage";
 import { useWalletStore } from "@/store/wallet/wallet.store";
 import { InsuranceType } from "@/store/insurance/insurance.type";
 import { ethers } from "ethers";
+import TooltipWarning from "../Tooltip/TooltipWarning";
+import NotiIcon from "../Icon/NotiIcon";
 
 export default function AzuranceTable() {
   const [filter, setFilter] = useState("Ongoing");
@@ -157,7 +159,20 @@ export default function AzuranceTable() {
                   column.field === "expiration" ? "text-center" : "text-start"
                 }`}
               >
-                {column.headerName}
+                {column.headerName === "Utilization" ? (
+                  <div className="flex">
+                    <div className="my-auto">{column.headerName}</div>
+                    <TooltipWarning
+                      description={`Utilization reflect how much liquidity is allocated by buyers. It can be calculated as "buyer * multiplier / seller"`}
+                    >
+                      <div className=" ml-1 cursor-pointer">
+                        <NotiIcon color="#565762" />
+                      </div>
+                    </TooltipWarning>
+                  </div>
+                ) : (
+                  <div>{column.headerName}</div>
+                )}
               </td>
             ))}
             <td width="" className="text-center">
