@@ -362,7 +362,8 @@ const StakeModal = ({
                       You will receive
                     </p>
                     <p className="text-[#0F1419] font-medium text-sm">
-                      0 {insurance.buyerToken.symbol}
+                      {formatDecimal(calculateShare())}{" "}
+                      {insurance.buyerToken.symbol}
                     </p>
                   </div>
                 </div>
