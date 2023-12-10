@@ -1,5 +1,5 @@
+import AzuranceTable from "@/components/Table/table";
 import TopBanner from "@/components/TopBanner";
-import Table from "../components/Table/table";
 import Head from "next/head";
 
 export default function Home() {
@@ -14,9 +14,8 @@ export default function Home() {
           description="Decentralized insurance platform that providing flexible conditions on-chain"
           isCreateInsurance={false}
         />
-        <Table />
+        <AzuranceTable />
       </div>
     </>
-
   );
 }
