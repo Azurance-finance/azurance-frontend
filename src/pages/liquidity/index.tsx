@@ -1,5 +1,6 @@
 import TableInsurance from "@/components/Table/tableInsurance";
 import TopBanner from "@/components/TopBanner";
+import Head from "next/head";
 import React from "react";
 
 type Azurance = {
@@ -28,9 +29,9 @@ const Liquidity = () => {
 
   return (
     <>
-      <head>
+      <Head>
         <title>Azurance - Liquidity</title>
-      </head>
+      </Head>
       <div>
         <TopBanner
           title="Your Insurance"

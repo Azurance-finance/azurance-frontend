@@ -18,11 +18,11 @@ export const useSecondsPerBlock = (initialVal = 5) => {
             const secondsPerBlock = timeDiff / block.number;
             setSecondsPerBlock(secondsPerBlock);
         }
-    }, [provider, currentChainId]);
+    }, [provider]);
 
     useEffect(() => {
         getSecondsPerBlock();
-    }, [provider, currentChainId]);
+    }, [provider, currentChainId, getSecondsPerBlock]);
 
 
     return {

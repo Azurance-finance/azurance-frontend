@@ -1,12 +1,13 @@
 import TopBanner from "@/components/TopBanner";
 import Table from "../components/Table/table";
+import Head from "next/head";
 
 export default function Home() {
   return (
     <>
-      <head>
+      <Head>
         <title>Azurance - Products</title>
-      </head>
+      </Head>
       <div>
         <TopBanner
           title="Azurance"

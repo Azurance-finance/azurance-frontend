@@ -1,14 +1,15 @@
 import TableFaucet from "@/components/Table/tableFaucet";
 import TopBanner from "@/components/TopBanner";
 import { tokens } from "@/constants/mockTableData";
+import Head from "next/head";
 import React from "react";
 
 const Faucet = () => {
   return (
     <>
-      <head>
+      <Head>
         <title>Azurance - Claim</title>
-      </head>
+      </Head>
       <div>
         <TopBanner
           title="Faucet"
