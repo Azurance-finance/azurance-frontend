@@ -65,6 +65,7 @@ const columnsStake = [
     width: "25%",
   },
   { field: "asset", headerName: "Asset", sortable: false, width: "25%" },
+  { field: "benefit", headerName: "Benefit", sortable: false, width: "10%" },
   {
     field: "buyerBalance",
     headerName: "Buyer Balance",
@@ -83,6 +84,35 @@ const columnsStake = [
     headerName: "Claim Date",
     sortable: true,
     width: "20%",
+  },
+];
+
+const columnsStakeClaimable = [
+  {
+    field: "insuranceName",
+    headerName: "Insurance Name",
+    sortable: false,
+    width: "25%",
+  },
+  { field: "asset", headerName: "Asset", sortable: false, width: "25%" },
+  { field: "benefit", headerName: "Benefit", sortable: false, width: "10%" },
+  {
+    field: "buyerBalance",
+    headerName: "Buyer Balance",
+    sortable: false,
+    width: "15%",
+  },
+  {
+    field: "sellerBalance",
+    headerName: "Seller Balance",
+    sortable: true,
+    width: "15%",
+  },
+  {
+    field: "status",
+    headerName: "Status",
+    sortable: true,
+    width: "15%",
   },
 ];
 
@@ -304,4 +334,5 @@ export {
   columnsStake,
   columnsInsurance,
   columnsToken,
+  columnsStakeClaimable
 };

@@ -40,6 +40,7 @@ export default function TableFaucet({ dataTable }: any) {
     }
     return tokensList;
   }, [search, tokensList]);
+  
   const handleAddFaucet = async (token: IToken) => {
     setIsAdding(true);
     try {

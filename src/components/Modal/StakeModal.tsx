@@ -51,9 +51,12 @@ const StakeModal = ({
   const [amount, setAmount] = React.useState("");
   const [availableAmount, setAvailableAmount] = useState(0);
   const [allowance, setAllowance] = useState(0);
-  const wording = header === "Claim" ? "claiming" : "stacking";
   const { currentChainId } = useWalletStore();
   const [imageUrl, setImageUrls] = useState<string>();
+
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalContent, setModalContent] = useState("");
+  const [modalLoading, setModalLoading] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -71,6 +74,7 @@ const StakeModal = ({
   const {
     onOpen: onOpenUnlock,
     onOpenChange: onOpenChangeUnlock,
+    onClose: onCloseUnlock,
     isOpen: isOpenUnlockModal,
   } = useDisclosure();
 
@@ -171,18 +175,42 @@ const StakeModal = ({
 
   const handleCheckUnlockClaim = async () => {
     if (provider) {
+
+      setModalLoading(true);
+      setModalTitle("Your request is being processed");
+      setModalContent("Please wait for transaction to be completed.");
+      onOpenUnlock();
+
       try {
         const signer = provider?.getSigner();
-        await azurancePoolContractService.checkUnlockClaim(
-          insurance.id,
-          signer
-        );
+        if (now > insurance.maturityTime) {
+          await azurancePoolContractService.unlockMaturity(
+            insurance.id,
+            signer
+          );
+        } else {
+          await azurancePoolContractService.checkUnlockClaim(
+            insurance.id,
+            signer
+          );
+        }
+
+        setModalLoading(false);
+        setModalTitle("Your request has been completed");
+        setModalContent("Please wait for the request to be settled and check it again soon.");
+
         onInsuranceUpdate();
-        onOpenUnlock();
-        onClose();
-      } catch (e) {
-        console.error(e);
+      } catch (e: any) {
+        if ((e as any).code === "ACTION_REJECTED") {
+          onCloseUnlock();
+        } else {
+          setModalTitle("Something went wrong");
+          setModalContent("Please try again later.");
+        }
+
       }
+
+      setModalLoading(false);
     }
   };
 
@@ -255,9 +283,8 @@ const StakeModal = ({
                   label={`${header} amount`}
                   labelPlacement="outside"
                   placeholder="Enter amount"
-                  description={`Max deposit: ${calculateMaxDeposit()} ${
-                    insurance.underlyingToken.symbol
-                  }`}
+                  description={`Max deposit: ${calculateMaxDeposit()} ${insurance.underlyingToken.symbol
+                    }`}
                   endContent={
                     <div className="flex">
                       <div className="my-auto text-[#0052FF] text-xs font-semibold">
@@ -412,12 +439,11 @@ const StakeModal = ({
       />
       <StatusModal
         isOpen={isOpenUnlockModal}
-        isLoading={false}
+        isLoading={modalLoading}
         onOpenChange={onOpenChangeUnlock}
-        isFooter={true}
-        title="Your liquidity has expired"
-        description="Your liquidity has been expired. Please refresh to
-the Claim page for claim token."
+        isFooter={false}
+        title={modalTitle}
+        description={modalContent}
       />
     </>
   );
