@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { columnsStake } from "@/constants/mockTableData";
+import { columnsStake, columnsStakeClaimable } from "@/constants/mockTableData";
 import { formatDecimal } from "@/utils/formatNumber";
 import { AzuranceSelcet } from "./AzuranceSelect";
 import { Button, useDisclosure } from "@nextui-org/react";
@@ -19,8 +19,10 @@ import { ethers } from "ethers";
 import { StarIconSolid } from "../../../public/icons/StarIconSolid";
 import { useProvider } from "@/hooks/provider.hook";
 import tokenContractService from "@/services/contracts/mintableTokenContract.service";
-import { STATES } from "@/constants/state.constant";
+import { STATES, STATE_ARR } from "@/constants/state.constant";
 import { CHAINS } from "@/constants/chain.constant";
+import { IToken } from "../../../types/token";
+import WithdrawModal from "../Modal/WithdrawModal";
 
 export default function TableStake() {
   const [filter, setFilter] = useState("Ongoing");
@@ -178,20 +180,23 @@ export default function TableStake() {
     let totalBuyShare = getBuyerShare(index);
     let totalSellShare = getSellerShare(index);
 
+    let adjustedBuyShare = totalBuyShare;
+    let adjustedSellShare = totalSellShare;
+
     if (insurance.status === STATES.CLAIMABLE) {
-      totalBuyShare = totalBuyShare * multiplier;
-      totalSellShare = totalSellShare / multiplier;
+      adjustedBuyShare = totalBuyShare * multiplier;
+      adjustedSellShare = totalSellShare / multiplier;
     } else if (insurance.status === STATES.MATURED) {
-      totalBuyShare = totalBuyShare / multiplier;
-      totalSellShare = totalSellShare * multiplier;
+      adjustedBuyShare = totalBuyShare / multiplier;
+      adjustedSellShare = totalSellShare * multiplier;
     }
 
-    const totalShare = totalBuyShare + totalSellShare;
+    const totalShare = adjustedBuyShare + adjustedSellShare;
 
     const totalBuyerValue =
-      totalShare === 0 ? 0 : (totalBuyShare * totalValue) / totalShare;
+      totalShare === 0 ? 0 : (adjustedBuyShare * totalValue) / totalShare;
     const totalSellerValue =
-      totalShare === 0 ? 0 : (totalSellShare * totalValue) / totalShare;
+      totalShare === 0 ? 0 : (adjustedSellShare * totalValue) / totalShare;
 
     const buyerValue =
       totalBuyShare === 0
@@ -203,6 +208,27 @@ export default function TableStake() {
         : (getSellerBalance(index) * totalSellerValue) / totalSellShare;
 
     return { buyerValue, sellerValue };
+  };
+
+  const addTokenToWallet = async (token: IToken) => {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({
+          method: "wallet_watchAsset",
+          params: {
+            type: "ERC20",
+            options: {
+              address: token.tokenAddress,
+              symbol: token.tokenSymbol,
+              decimals: token.tokenDecimal,
+              image: token.tokenLogo,
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -220,11 +246,11 @@ export default function TableStake() {
       <table className="table-auto w-full">
         <thead className="bg-gray-100 text-gray-600 h-14 font-bold text-xs text-center uppercase">
           <tr>
-            {columnsStake.map((column, index) => (
+            {(filter === "Ongoing" ? columnsStake : columnsStakeClaimable).map((column, index) => (
               <td
                 key={column.field}
                 width={column.width}
-                className={`${column.field === "claimDate" ? "text-center" : "text-start"
+                className={`${["claimDate", "status"].includes(column.field) ? "text-center" : "text-start"
                   } ${index === 0 && "pl-5"}`}
               >
                 {column.headerName}
@@ -291,11 +317,15 @@ export default function TableStake() {
                       </div>
                     </div>
                   </td>
-                  <td className="text-start">
+                  <td className="text-start  text-[#0F1419]">
+                    {getMultiplier(index)}x
+                  </td>
+
+                  <td className="text-start cursor-pointer" onClick={() => addTokenToWallet({ tokenName: item.buyerToken.name, tokenSymbol: item.buyerToken.symbol, tokenAddress: item.buyerToken.id, tokenDecimal: 18, tokenLogo: imageUrls[index] })}>
                     <div className="text-[#0F1419] text-sm">
                       {formatDecimal(getBuyerBalance(index))}
                     </div>
-                    <div className="text-[#A3A3A3] text-xs">
+                    <div className="text-[#A3A3A3] text-xs ">
                       {formatDecimal(
                         calculateWithdrawableAmount(index).buyerValue
                       )}{" "}
@@ -303,7 +333,7 @@ export default function TableStake() {
                     </div>
                   </td>
 
-                  <td className="text-start">
+                  <td className="text-start cursor-pointer" onClick={() => addTokenToWallet({ tokenName: item.sellerToken.name, tokenSymbol: item.sellerToken.symbol, tokenAddress: item.sellerToken.id, tokenDecimal: 18, tokenLogo: imageUrls[index] })}>
                     <div className="text-[#0F1419] text-sm">
                       {formatDecimal(getSellerBalance(index))}
                     </div>
@@ -314,18 +344,28 @@ export default function TableStake() {
                       {item.underlyingToken.symbol}
                     </div>
                   </td>
-                  <td>
-                    <div className="flex flex-col justify-center items-center my-auto ">
-                      <TimeRemine type="stake" timeData={item.maturityTime} />
-                    </div>
-                  </td>
+                  {
+                    filter === "Ongoing" ? (
+                      <td>
+                        <div className="flex flex-col justify-center items-center my-auto ">
+                          <TimeRemine type="stake" timeData={item.maturityTime} />
+                        </div>
+                      </td>
+                    ) : (
+                      <td>
+                        <div className="flex flex-col justify-center items-center my-auto ">
+                          {STATE_ARR[item.status]}
+                        </div>
+                      </td>
+                    )
+                  }
                   <td className="text-start px-4 ">
                     <div className="flex">
                       <div className="px-1">
                         <Button
                           className={`w-24 px-4 border-1 ${isDisable
-                              ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
-                              : "bg-[#0052FF] text-white border-[#0052FF]"
+                            ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
+                            : "bg-[#0052FF] text-white border-[#0052FF]"
                             }`}
                           onClick={() => {
                             handleSelect(index);
@@ -347,7 +387,7 @@ export default function TableStake() {
       </table>
       {/* TODO: Create a new modal to handle token withdrawal */}
       {selectedInsurance && (
-        <StakeModal
+        <WithdrawModal
           isOpen={isOpen}
           insurance={selectedInsurance}
           header="Buy"

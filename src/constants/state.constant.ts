@@ -4,3 +4,10 @@ export const STATES = {
     MATURED: 2,
     TERMINATED: 3
 }
+
+export const STATE_ARR = [
+    'Ongoing',
+    'Claimable',
+    'Matured',
+    'Termindated',
+]
