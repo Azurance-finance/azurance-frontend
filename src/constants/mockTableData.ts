@@ -6,8 +6,8 @@ const columns = [
     sortable: false,
     width: "15%",
   },
-  // { field: "price", headerName: "Price", sortable: false, width: "10%" },
-  { field: "benefit", headerName: "Benefit", sortable: true, width: "10%" },
+  { field: "asset", headerName: "Asset", sortable: false, width: "15%" },
+  { field: "benefit", headerName: "Benefit", sortable: true, width: "8%" },
   {
     field: "utilization",
     headerName: "Utilization",
@@ -24,7 +24,7 @@ const columns = [
     field: "expiration",
     headerName: "Expiration",
     sortable: true,
-    width: "35%",
+    width: "30%",
   },
 ];
 
@@ -35,25 +35,25 @@ const columnsInsurance = [
     sortable: false,
     width: "15%",
   },
-  { field: "apr", headerName: "APR", sortable: true, width: "10%" },
+  { field: "asset", headerName: "Asset", sortable: false, width: "15%" },
+  { field: "yield", headerName: "Yield", sortable: true, width: "10%" },
   {
     field: "totalSupply",
     headerName: "Total Supply",
     sortable: false,
-    width: "10%",
+    width: "15%",
   },
-  // { field: "price", headerName: "Price", sortable: false, width: "10%" },
   {
     field: "utilization",
     headerName: "Utilization",
     sortable: false,
-    width: "15%",
+    width: "10%",
   },
   {
     field: "expiration",
     headerName: "Expiration",
     sortable: true,
-    width: "35%",
+    width: "30%",
   },
 ];
 

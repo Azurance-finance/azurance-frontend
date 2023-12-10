@@ -1,13 +1,14 @@
 import TableStake from "@/components/Table/tableStake";
 import TopBanner from "@/components/TopBanner";
+import Head from "next/head";
 import React from "react";
 
 const Claim = () => {
   return (
     <>
-      <head>
+      <Head>
         <title>Azurance - Claim</title>
-      </head>
+      </Head>
       <div>
         <TopBanner
           title="Your Stake"

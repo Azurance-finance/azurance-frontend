@@ -19,6 +19,7 @@ import { InsuranceType } from "@/store/insurance/insurance.type";
 import { ethers } from "ethers";
 import TooltipWarning from "../Tooltip/TooltipWarning";
 import NotiIcon from "../Icon/NotiIcon";
+import { CHAINS } from "@/constants/chain.constant";
 
 export default function AzuranceTable() {
   const [filter, setFilter] = useState("Ongoing");
@@ -53,14 +54,14 @@ export default function AzuranceTable() {
 
   useEffect(() => {
     fetchInsurances();
-  }, [filter]);
+  }, [filter, fetchInsurances]);
 
   useEffect(() => {
     const promises = insuranceList.map((insurance) =>
       getDownloadURLWithBackup(currentChainId, insurance.id)
     );
     Promise.all(promises).then((result) => setImageUrls(result));
-  }, [insuranceList, currentChainId]);
+  }, [insuranceList, currentChainId, getDownloadURLWithBackup]);
 
   const data = useMemo(() => {
     if (search) {
@@ -155,15 +156,14 @@ export default function AzuranceTable() {
               <td
                 key={column.field}
                 width={column.width}
-                className={`${
-                  column.field === "expiration" ? "text-center" : "text-start"
-                }`}
+                className={`${column.field === "expiration" ? "text-center" : "text-start"
+                  }`}
               >
                 {column.headerName === "Utilization" ? (
                   <div className="flex">
                     <div className="my-auto">{column.headerName}</div>
                     <TooltipWarning
-                      description={`Utilization reflect how much liquidity is allocated by buyers. It can be calculated as "buyer * multiplier / seller"`}
+                      description={`Utilization reflects how much liquidity is allocated by buyers. It can be calculated as "buyer * multiplier / seller"`}
                     >
                       <div className=" ml-1 cursor-pointer">
                         <NotiIcon color="#565762" />
@@ -183,27 +183,27 @@ export default function AzuranceTable() {
         <tbody className="text-center">
           {data?.length
             ? data
-                .sort((a: InsuranceType, b: InsuranceType) => {
-                  return b.createdAt - a.createdAt;
-                })
-                .map((item: InsuranceType, index: number) => (
-                  <tr
-                    key={index}
-                    className={`${
-                      index !== data.length - 1 && `border-b `
+              .sort((a: InsuranceType, b: InsuranceType) => {
+                return b.createdAt - a.createdAt;
+              })
+              .map((item: InsuranceType, index: number) => (
+                <tr
+                  key={index}
+                  className={`${index !== data.length - 1 && `border-b `
                     } h-[95px] text-gray-600 rounded-none hover:bg-gray-50`}
-                  >
-                    <td>
-                      <div
-                        className="flex w-full justify-center items-center"
-                        onClick={() => {
-                          handleFavorite(item);
-                        }}
-                      >
-                        {renderFavorite(item.id)}
-                      </div>
-                    </td>
-                    <td className="text-start">
+                >
+                  <td>
+                    <div
+                      className="flex w-full justify-center items-center"
+                      onClick={() => {
+                        handleFavorite(item);
+                      }}
+                    >
+                      {renderFavorite(item.id)}
+                    </div>
+                  </td>
+                  <td className="text-start">
+                    <a href={`${CHAINS[currentChainId]?.blockExplorerUrls}/address/${item.condition}`} target="_blank">
                       <div className="flex">
                         <picture className="flex items-center">
                           <img
@@ -223,36 +223,59 @@ export default function AzuranceTable() {
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="text-start  text-[#0F1419]">
-                      {getMultiplier(index)}x
-                    </td>
-                    <td className="text-start">
-                      <PercentageBar
-                        utilization={getUtilization(index)}
-                        totalBuyer={getBuyerShare(index)}
-                        totalSeller={getSellerShare(index)}
-                      />
-                    </td>
-                    <td className="text-start  text-[#0F1419]">
-                      {formatDecimal(getTotalValue(index))}
-                    </td>
-                    <td>
-                      <div className="flex flex-col justify-center items-center my-auto ">
-                        <TimeRemine timeData={item.maturityTime} />
+                    </a>
+                  </td>
+                  <td className="text-start">
+                    <div className="flex">
+                      <picture>
+                        <img
+                          src={`/tokens/${item.underlyingToken.symbol}.png`}
+                          width="36px"
+                          height="36px"
+                          className="rounded-full"
+                          alt="logo-chain"
+                        />
+                      </picture>
+                      <div className="text-start ml-2">
+                        <div className="text-sm font-semibold">
+                          {item.underlyingToken.name}
+                        </div>
+                        <div className="max-w-[30px] text-[12px] text-[#A3A3A3] text-start">
+                          {item.underlyingToken.symbol}
+                        </div>
                       </div>
-                    </td>
-                    <td className="text-start px-4">
-                      <Button
-                        color="primary"
-                        className=" px-4"
-                        onClick={() => handleSelect(index)}
-                      >
-                        Buy
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                    </div>
+                  </td>
+                  <td className="text-start  text-[#0F1419]">
+                    {getMultiplier(index)}x
+                  </td>
+                  <td className="text-start">
+                    <PercentageBar
+                      utilization={getUtilization(index)}
+                      totalBuyer={getBuyerShare(index)}
+                      totalSeller={getSellerShare(index)}
+                    />
+                  </td>
+                  <td className="text-start  text-[#0F1419] text-sm">
+                    {formatDecimal(getTotalValue(index))} {item.underlyingToken.symbol}
+                  </td>
+                  <td>
+                    <div className="flex flex-col justify-center items-center my-auto ">
+                      <TimeRemine timeData={item.maturityTime} />
+                    </div>
+                  </td>
+                  <td className="text-start px-4">
+                    <Button
+                      color="primary"
+                      className=" px-4"
+                      isDisabled={filter !== "Ongoing"}
+                      onClick={() => handleSelect(index)}
+                    >
+                      Buy
+                    </Button>
+                  </td>
+                </tr>
+              ))
             : null}
         </tbody>
       </table>

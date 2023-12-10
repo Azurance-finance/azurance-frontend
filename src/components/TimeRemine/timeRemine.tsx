@@ -1,8 +1,6 @@
-import { Divider } from "@nextui-org/react";
 import React from "react";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { ArrowRightIcon } from "../../../public/icons/ArrowRightIcon";
 import { Duration } from "./duration";
 import { ClaimDate } from "./claimDate";
 

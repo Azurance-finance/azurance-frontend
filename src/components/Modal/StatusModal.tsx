@@ -55,7 +55,7 @@ const StatusModal = ({
                 )} */}
                 <Link href="/claim" className="w-full">
                   <Button color="primary" className="w-full">
-                    Back to claim
+                    Check your wallet
                   </Button>
                 </Link>
               </ModalFooter>

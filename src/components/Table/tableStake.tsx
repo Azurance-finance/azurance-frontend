@@ -20,6 +20,7 @@ import { StarIconSolid } from "../../../public/icons/StarIconSolid";
 import { useProvider } from "@/hooks/provider.hook";
 import tokenContractService from "@/services/contracts/mintableTokenContract.service";
 import { STATES } from "@/constants/state.constant";
+import { CHAINS } from "@/constants/chain.constant";
 
 export default function TableStake() {
   const [filter, setFilter] = useState("Ongoing");
@@ -60,14 +61,14 @@ export default function TableStake() {
 
   useEffect(() => {
     fetchInsurances();
-  }, [filter]);
+  }, [filter, fetchInsurances]);
 
   useEffect(() => {
     const promises = insuranceList.map((insurance) =>
       getDownloadURLWithBackup(currentChainId, insurance.id)
     );
     Promise.all(promises).then((result) => setImageUrls(result));
-  }, [insuranceList, currentChainId]);
+  }, [insuranceList, currentChainId, getDownloadURLWithBackup]);
 
   useEffect(() => {
     (async () => {
@@ -223,9 +224,8 @@ export default function TableStake() {
               <td
                 key={column.field}
                 width={column.width}
-                className={`${
-                  column.field === "claimDate" ? "text-center" : "text-start"
-                } ${index === 0 && "pl-5"}`}
+                className={`${column.field === "claimDate" ? "text-center" : "text-start"
+                  } ${index === 0 && "pl-5"}`}
               >
                 {column.headerName}
               </td>
@@ -238,17 +238,17 @@ export default function TableStake() {
         <tbody className="text-center">
           {data?.length
             ? data
-                .sort((a: InsuranceType, b: InsuranceType) => {
-                  return b.createdAt - a.createdAt;
-                })
-                .map((item: InsuranceType, index: number) => (
-                  <tr
-                    key={index}
-                    className={`${
-                      index !== data.length - 1 && `border-b `
-                    } h-[95px] text-gray-600 rounded-none hover:bg-gray-50 cursor-pointer`}
-                  >
-                    <td className="text-start pl-5">
+              .sort((a: InsuranceType, b: InsuranceType) => {
+                return b.createdAt - a.createdAt;
+              })
+              .map((item: InsuranceType, index: number) => (
+                <tr
+                  key={index}
+                  className={`${index !== data.length - 1 && `border-b `
+                    } h-[95px] text-gray-600 rounded-none hover:bg-gray-50`}
+                >
+                  <td className="text-start pl-5">
+                    <a href={`${CHAINS[currentChainId]?.blockExplorerUrls}/address/${item.condition}`} target="_blank">
                       <div className="flex">
                         <picture className="flex items-center">
                           <img
@@ -268,80 +268,80 @@ export default function TableStake() {
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="text-start">
-                      <div className="flex">
-                        <picture>
-                          <img
-                            src={`/tokens/${item.underlyingToken.symbol}.png`}
-                            width="36px"
-                            height="36px"
-                            className="rounded-full"
-                            alt="logo-chain"
-                          />
-                        </picture>
-                        <div className="text-start ml-2">
-                          <div className="text-sm font-semibold">
-                            {item.underlyingToken.name}
-                          </div>
-                          <div className="max-w-[30px] text-[12px] text-[#A3A3A3] text-start">
-                            {item.underlyingToken.symbol}
-                          </div>
+                    </a>
+                  </td>
+                  <td className="text-start">
+                    <div className="flex">
+                      <picture>
+                        <img
+                          src={`/tokens/${item.underlyingToken.symbol}.png`}
+                          width="36px"
+                          height="36px"
+                          className="rounded-full"
+                          alt="logo-chain"
+                        />
+                      </picture>
+                      <div className="text-start ml-2">
+                        <div className="text-sm font-semibold">
+                          {item.underlyingToken.name}
+                        </div>
+                        <div className="max-w-[30px] text-[12px] text-[#A3A3A3] text-start">
+                          {item.underlyingToken.symbol}
                         </div>
                       </div>
-                    </td>
-                    <td className="text-start">
-                      <div className="text-[#0F1419] text-sm">
-                        {formatDecimal(getBuyerBalance(index))}
-                      </div>
-                      <div className="text-[#A3A3A3] text-xs">
-                        {formatDecimal(
-                          calculateWithdrawableAmount(index).buyerValue
-                        )}{" "}
-                        {item.underlyingToken.symbol}
-                      </div>
-                    </td>
+                    </div>
+                  </td>
+                  <td className="text-start">
+                    <div className="text-[#0F1419] text-sm">
+                      {formatDecimal(getBuyerBalance(index))}
+                    </div>
+                    <div className="text-[#A3A3A3] text-xs">
+                      {formatDecimal(
+                        calculateWithdrawableAmount(index).buyerValue
+                      )}{" "}
+                      {item.underlyingToken.symbol}
+                    </div>
+                  </td>
 
-                    <td className="text-start">
-                      <div className="text-[#0F1419] text-sm">
-                        {formatDecimal(getSellerBalance(index))}
-                      </div>
-                      <div className="text-[#A3A3A3] text-xs">
-                        {formatDecimal(
-                          calculateWithdrawableAmount(index).sellerValue
-                        )}{" "}
-                        {item.underlyingToken.symbol}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex flex-col justify-center items-center my-auto ">
-                        <TimeRemine type="stake" timeData={item.maturityTime} />
-                      </div>
-                    </td>
-                    <td className="text-start px-4 ">
-                      <div className="flex">
-                        <div className="px-1">
-                          <Button
-                            className={`w-24 px-4 border-1 ${
-                              isDisable
-                                ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
-                                : "bg-[#0052FF] text-white border-[#0052FF]"
+                  <td className="text-start">
+                    <div className="text-[#0F1419] text-sm">
+                      {formatDecimal(getSellerBalance(index))}
+                    </div>
+                    <div className="text-[#A3A3A3] text-xs">
+                      {formatDecimal(
+                        calculateWithdrawableAmount(index).sellerValue
+                      )}{" "}
+                      {item.underlyingToken.symbol}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex flex-col justify-center items-center my-auto ">
+                      <TimeRemine type="stake" timeData={item.maturityTime} />
+                    </div>
+                  </td>
+                  <td className="text-start px-4 ">
+                    <div className="flex">
+                      <div className="px-1">
+                        <Button
+                          className={`w-24 px-4 border-1 ${isDisable
+                              ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
+                              : "bg-[#0052FF] text-white border-[#0052FF]"
                             }`}
-                            onClick={() => {
-                              handleSelect(index);
-                            }}
-                            isDisabled={isDisable}
-                          >
-                            <WalletIcon
-                              color={`${isDisable ? "#BCBEC9" : "#FFFFFF"}`}
-                            />
-                            Claim
-                          </Button>
-                        </div>
+                          onClick={() => {
+                            handleSelect(index);
+                          }}
+                          isDisabled={isDisable}
+                        >
+                          <WalletIcon
+                            color={`${isDisable ? "#BCBEC9" : "#FFFFFF"}`}
+                          />
+                          Claim
+                        </Button>
                       </div>
-                    </td>
-                  </tr>
-                ))
+                    </div>
+                  </td>
+                </tr>
+              ))
             : null}
         </tbody>
       </table>

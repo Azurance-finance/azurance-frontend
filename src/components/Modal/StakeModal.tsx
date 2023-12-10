@@ -397,12 +397,8 @@ const StakeModal = ({
       <StatusModal
         isOpen={isOpenStack}
         isLoading={false}
-        title={`You are now ${wording} ${amount} ${insurance.underlyingToken.symbol}`}
-        description={`${wording} ${amount} ${
-          insurance.underlyingToken.symbol
-        }. You will receive ${formatDecimal(calculateShare())} ${
-          insurance.buyerToken.symbol
-        }`}
+        title={`You have deposited ${amount} ${insurance.underlyingToken.symbol}`}
+        description={`${formatDecimal(calculateShare())} ${insurance.buyerToken.symbol} is transferred to your wallet.`}
         onOpenChange={onOpenChangeStack}
         isFooter={true}
       />

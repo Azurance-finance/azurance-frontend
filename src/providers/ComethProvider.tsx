@@ -51,7 +51,8 @@ export default function ComethProvider({
       setLoading(false);
     })();
     console.log("connect cometh instance");
-  }, []);
+  }, [walletAddress, walletType]);
+
   if (isLoading)
     return (
       <div className="flex justify-center items-center h-screen">

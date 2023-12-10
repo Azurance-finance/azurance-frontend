@@ -142,7 +142,7 @@ const CreateInsuranceModal = ({
 
       setCreating(false);
     },
-    [provider, currentChainId, insurance, secondsPerBlock]
+    [provider, currentChainId, insurance, secondsPerBlock, fetchInsurances, onOpenSuccess, onClose]
   );
 
   const uploadImage = async (file: File, filename: string) => {

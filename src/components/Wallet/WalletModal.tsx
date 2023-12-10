@@ -139,7 +139,7 @@ export default function WalletModal({ isOpen, onOpenChange }: IWalletModal) {
         </>
       );
     },
-    [walletAddressInput, connect]
+    [connect]
   );
 
   // useEffect(() => {
