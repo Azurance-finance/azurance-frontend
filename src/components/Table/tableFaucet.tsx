@@ -40,7 +40,7 @@ export default function TableFaucet({ dataTable }: any) {
     }
     return tokensList;
   }, [search, tokensList]);
-  
+
   const handleAddFaucet = async (token: IToken) => {
     setIsAdding(true);
     try {
@@ -187,12 +187,14 @@ export default function TableFaucet({ dataTable }: any) {
 
                     <td className="text-start pl-16">
                       <div className="text-[#0F1419] text-sm">
-                        {balance[index]}
+                        {walletAddress ? balance[index] : "0"}
                       </div>
                       <div className="text-[#A3A3A3] text-xs">
-                        {formatFiatNumber(
-                          Number(addr[index]) * Number(balance[index])
-                        )}
+                        {walletAddress
+                          ? formatFiatNumber(
+                              Number(addr[index]) * Number(balance[index])
+                            )
+                          : formatFiatNumber(0)}
                       </div>
                     </td>
 
