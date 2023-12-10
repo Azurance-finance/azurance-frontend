@@ -62,6 +62,10 @@ const DepositModal = ({
   } = useDisclosure();
   const { provider } = useProvider();
 
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalContent, setModalContent] = useState("");
+  const [modalLoading, setModalLoading] = useState(false);
+
   const now = Math.round(new Date().valueOf() / 1000);
 
   useEffect(() => {
@@ -270,7 +274,6 @@ const DepositModal = ({
                     <p className="text-[#A3A3A3] font-medium text-sm">
                       You will receive
                     </p>
-                    {/* TODO: Calculate the received seller */}
                     <p className="text-[#0F1419] font-medium text-sm">
                       {formatDecimal(calculateShare())}{" "}
                       {insurance.sellerToken.symbol}
@@ -306,12 +309,11 @@ const DepositModal = ({
       />
       <StatusModal
         isOpen={isOpenUnlockModal}
-        isLoading={false}
+        isLoading={modalLoading}
         onOpenChange={onOpenChangeUnlock}
-        isFooter={true}
-        title="Your liquidity has expired"
-        description="Your liquidity has been expired. Please refresh to
-the Claim page for claim token."
+        isFooter={false}
+        title={modalTitle}
+        description={modalContent}
       />
     </>
   );
