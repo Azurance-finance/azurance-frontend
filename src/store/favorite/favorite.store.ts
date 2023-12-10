@@ -1,18 +1,18 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { IFavoriteState } from "./favorite.type";
-import { IAzurance } from "../../../types/azurance";
+import { InsuranceType } from "../insurance/insurance.type";
 
 export const useFavoriteStore = create(
   persist<IFavoriteState>(
     (set, get) => ({
       favorites: [],
-      addFavorite: (insurance: IAzurance) => {
+      addFavorite: (insurance: InsuranceType) => {
         set((state) => ({
           favorites: [...state.favorites, insurance],
         }));
       },
-      removeFavorite: (insurance: IAzurance) => {
+      removeFavorite: (insurance: InsuranceType) => {
         const favoriteLists = get().favorites;
         const newList = favoriteLists.filter(
           (favoriteList) => favoriteList.id != insurance.id

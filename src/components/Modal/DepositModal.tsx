@@ -2,6 +2,8 @@ import { tokens } from "@/constants/token";
 import { useProvider } from "@/hooks/provider.hook";
 import azurancePoolContractService from "@/services/contracts/azurancePoolContract";
 import tokenContractService from "@/services/contracts/tokenContract.service";
+import { InsuranceType } from "@/store/insurance/insurance.type";
+import { formatDecimal } from "@/utils/formatNumber";
 import {
   Button,
   Divider,
@@ -16,6 +18,7 @@ import {
 } from "@nextui-org/react";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
+import NotiSolidIcon from "../Icon/NotiSolidIcon";
 const borderedStyle = {
   inputWrapper: `border-1 border-[#D0D5DD]`,
   label: `text-[#5B616E] text-sm font-normal`,
@@ -27,19 +30,20 @@ const triggerStyle = {
 
 type DepositModalTypes = {
   isOpen: boolean;
+  insurance: InsuranceType;
+  description?: string;
   onOpenChange: () => void;
-  token: string,
-  tokenAddress: string,
-  outputToken: string,
-  pool: string
+  onInsuranceUpdate: () => void;
 };
-const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken, pool }: DepositModalTypes) => {
+const DepositModal = ({ isOpen, insurance, description, onOpenChange, onInsuranceUpdate }: DepositModalTypes) => {
   const [amount, setAmount] = useState("");
   const [availableAmount, setAvailableAmount] = useState(0);
   const [allowance, setAllowance] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const { provider } = useProvider();
+
+  const now = Math.round(new Date().valueOf() / 1000)
 
   useEffect(() => {
 
@@ -48,56 +52,92 @@ const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken, 
         const signer = provider?.getSigner();
         const address = await signer.getAddress();
 
-        const balance = await tokenContractService.getBalance(tokenAddress, provider, address);
-        const allowance = await tokenContractService.getAllowance(tokenAddress, provider, address, pool);
+        const balance = await tokenContractService.getBalance(insurance.underlyingToken.id, provider, address);
+        const allowance = await tokenContractService.getAllowance(insurance.underlyingToken.id, provider, address, insurance.id);
         setAvailableAmount(+balance);
         setAllowance(+allowance)
       }
     })()
 
-  }, [tokenAddress, provider]);
+  }, [insurance, provider]);
 
-  const handleApprove = async () => {
+  const handleDeposit = async () => {
     setLoading(true);
     if (provider) {
       try {
+        if (now > insurance.maturityTime) {
+          await handleUnlockMaturity();
+        } else if (now > insurance.staleTime) {
+        } else if (allowance <= +amount) {
+          await handleApprove();
+        } else {
+          await handleSellInsurance();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setLoading(false);
+  }
+
+  const handleApprove = async () => {
+    if (provider) {
+      try {
         const signer = provider?.getSigner();
-        await tokenContractService.approve(tokenAddress, signer, pool, ethers.constants.MaxUint256);
+        await tokenContractService.approve(insurance.underlyingToken.id, signer, insurance.id, ethers.constants.MaxUint256);
         setAllowance(Infinity);
       } catch (e) {
         console.error(e);
       }
     }
-    setLoading(false);
   }
 
   const handleUnlockMaturity = async () => {
-    setLoading(true);
     if (provider) {
       try {
         const signer = provider?.getSigner();
-        await azurancePoolContractService.unlockMaturity(pool, signer);
-        // TODO: Update state to unlock maturity
-        // Close modal after unlock
-        // Fetch data update
+        await azurancePoolContractService.unlockMaturity(insurance.id, signer);
+        onInsuranceUpdate();
+        // TODO: Show modal successfully unlock and suggest to navigate to "claim" page
       } catch (e) {
         console.error(e);
       }
     }
-    setLoading(false);
   }
 
   const handleSellInsurance = async () => {
-    setLoading(true);
     if (provider) {
       try {
         const signer = provider?.getSigner();
-        await azurancePoolContractService.sellInsurance(pool, signer, ethers.utils.parseEther(amount));
+        await azurancePoolContractService.sellInsurance(insurance.id, signer, ethers.utils.parseEther(amount));
+        onInsuranceUpdate();
+        // TODO: Show modal successfully deposit
       } catch (e) {
         console.error(e)
       }
     }
-    setLoading(false);
+  }
+
+  const getButtonMessage = () => {
+    if (now > insurance.maturityTime) {
+      return "Unlock"
+    } else if (now > insurance.staleTime) {
+      return "Deposit ended"
+    } else if (allowance <= +amount) {
+      return "Approve"
+    } else {
+      return "Deposit"
+    }
+  }
+
+  const calculateShare = () => {
+    const totalShares = +ethers.utils.formatEther(insurance.totalShares);
+    const totalValue = +ethers.utils.formatEther(insurance.totalValue);
+    if (totalShares === 0) {
+      return +amount;
+    } else {
+      return (+amount * totalShares) / totalValue;
+    }
   }
 
   return (
@@ -115,19 +155,19 @@ const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken, 
               <Select
                 labelPlacement="outside"
                 label="Token"
-                placeholder={token}
+                placeholder={insurance.underlyingToken.symbol}
                 variant="bordered"
                 size="lg"
                 radius="sm"
                 classNames={triggerStyle}
                 isDisabled
-                value={token}
+                value={insurance.underlyingToken.symbol}
                 disabled
                 startContent={
-                  token && (
+                  insurance.underlyingToken.symbol && (
                     <picture>
                       <img
-                        src={`tokens/${token.toUpperCase()}.png`}
+                        src={`tokens/${insurance.underlyingToken.symbol.toUpperCase()}.png`}
                         width={24}
                         height={24}
                         alt=""
@@ -173,45 +213,45 @@ const DepositModal = ({ isOpen, onOpenChange, token, tokenAddress, outputToken, 
               />
               <div className="absolute right-6 top-0.5 text-xs font-normal">
                 Available: {availableAmount.toFixed(2)}
-                {token}
+                {insurance.underlyingToken.symbol}
               </div>
 
+              {
+                description && (
+                  <div className=" bg-[#F1F5FD] rounded p-3 flex">
+                    <div>
+                      <NotiSolidIcon />
+                    </div>
+                    <p className=" text-sm font-normal text-[#000] ml-2 ">
+                      {description}
+                    </p>
+                  </div>
+                )
+              }
+
               <div className=" border-1 border-[#E9EBED] rounded p-3 flex flex-col space-y-3">
-                {/* <div className=" flex justify-between">
-                  <p className="text-[#A3A3A3] font-medium text-sm">
-                    Exchange Rate
-                  </p>
-                  <p className="text-[#0F1419] font-medium text-sm">
-                    1 {isToken} = $ 1
-                  </p>
-                </div> */}
-                {/* <div className=" flex justify-between">
-                  <p className="text-[#A3A3A3] font-medium text-sm">
-                    Network fee
-                  </p>
-                  <p className="text-[#0F1419] font-medium text-sm">3.80%</p>
-                </div> */}
                 <div className=" flex justify-between">
                   <p className="text-[#A3A3A3] font-medium text-sm">
                     You will receive
                   </p>
+                  {/* TODO: Calculate the received seller */}
                   <p className="text-[#0F1419] font-medium text-sm">
-                    0 {outputToken}
+                    {formatDecimal(calculateShare())} {insurance.sellerToken.symbol}
                   </p>
                 </div>
               </div>
             </ModalBody>
+
+            {/* TODO: Add warning saying: The deposited tokens are locked until the insurance is claimable, matured, or terminated.*/}
             <ModalFooter className="mt-6">
               <Button
-                // onClick={() => {
-                //   onOpenStack();
-                // }}
                 color="primary"
                 className="w-full"
                 isLoading={loading}
-                onClick={allowance > +amount ? handleSellInsurance : handleApprove}
+                disabled={now > insurance.staleTime && now < insurance.maturityTime}
+                onClick={handleDeposit}
               >
-                {allowance > +amount ? "Deposit" : "Approve"}
+                {getButtonMessage()}
               </Button>
             </ModalFooter>
           </>

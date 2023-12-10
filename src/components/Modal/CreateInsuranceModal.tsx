@@ -3,12 +3,10 @@ import { LINKS } from "@/constants/links.constant";
 import { times } from "@/constants/time.constant";
 import { tokens } from "@/constants/token";
 import { yieldPlatformObj, yieldPlatforms } from "@/constants/yieldPlatform";
-import { useCometh } from "@/hooks/cometh.hook";
 import { useProvider } from "@/hooks/provider.hook";
 import azuranceFactoryContractService from "@/services/contracts/azuranceFactoryContract";
 import { useWalletStore } from "@/store/wallet/wallet.store";
 import {
-  Avatar,
   Button,
   Divider,
   Input,
@@ -22,13 +20,12 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
-import React, { useCallback, useEffect, useState } from "react";
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import React, { useCallback, useState } from "react";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { storage } from "@/utils/firebaseStorage";
 import StatusModal from "./StatusModal";
-import { CameraIcon } from "@heroicons/react/24/outline";
+import { useSecondsPerBlock } from "@/hooks/web3.hook";
+import { useInsurances } from "@/hooks/insurance.hook";
 
 type CreateInsuranceModalTypes = {
   onOpenChange: () => void;
@@ -76,6 +73,9 @@ const CreateInsuranceModal = ({
   const [imgFile, setImgFile] = useState<FileList>();
   const [imgUrl, setImgUrl] = useState(null);
 
+  const { secondsPerBlock } = useSecondsPerBlock();
+  const { fetchInsurances } = useInsurances();
+
   const handleCreateInsurance = useCallback(
     async (file: FileList) => {
 
@@ -85,21 +85,23 @@ const CreateInsuranceModal = ({
         const multiplerDecimals = 6;
         if (provider) {
           const signer = provider.getSigner();
-          const block = await provider.getBlock("pending");
           const currentTs = Math.floor(new Date().valueOf() / 1000);
           const maturityTs = currentTs + Number(insurance.expiration);
           const staleTs =
             currentTs + Math.floor(Number(insurance.expiration) * 0.8);
+
           const contractAddress =
             CONTRACT_ADDRESS[currentChainId]["AzruanceFactory"];
           const multipler =
             insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
+
           const maturityBlock = Math.floor(
-            (maturityTs * block.number) / block.timestamp
+            (maturityTs / secondsPerBlock)
           );
           const staleBlock = Math.floor(
-            (staleTs * block.number) / block.timestamp
+            (staleTs / secondsPerBlock)
           );
+
           const asset = CONTRACT_ADDRESS[currentChainId][insurance.token];
           const fee = 0;
           const feeTo = await signer.getAddress();
@@ -131,6 +133,7 @@ const CreateInsuranceModal = ({
             uploadImage(file[0], filename);
           }
 
+          fetchInsurances();
           onOpenSuccess();
           onClose();
         }
@@ -140,7 +143,7 @@ const CreateInsuranceModal = ({
 
       setCreating(false);
     },
-    [provider, currentChainId, insurance]
+    [provider, currentChainId, insurance, secondsPerBlock]
   );
 
   const uploadImage = async (file: File, filename: string) => {
@@ -161,6 +164,7 @@ const CreateInsuranceModal = ({
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          console.log("Download url: ", downloadURL)
           setImgUrl(downloadURL as any);
         });
       }

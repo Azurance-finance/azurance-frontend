@@ -1,7 +1,8 @@
 import { IAzurance } from "../../../types/azurance";
+import { InsuranceType } from "../insurance/insurance.type";
 
 export interface IFavoriteState {
-  favorites: IAzurance[];
-  addFavorite: (insurance: IAzurance) => void;
-  removeFavorite: (insurance: IAzurance) => void;
+  favorites: InsuranceType[];
+  addFavorite: (insurance: InsuranceType) => void;
+  removeFavorite: (insurance: InsuranceType) => void;
 }

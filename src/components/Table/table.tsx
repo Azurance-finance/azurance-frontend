@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { SearchIcon } from "../../../public/icons/SearchIcon";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { columns } from "@/constants/mockTableData";
-import { formatFiatNumber } from "@/utils/formatNumber";
+import { formatDecimal } from "@/utils/formatNumber";
 import PercentageBar from "../Slide/PercentageBar";
 import { AzuranceSelcet } from "./AzuranceSelect";
 import { Button, useDisclosure } from "@nextui-org/react";
@@ -9,31 +8,54 @@ import { StarIconSolid } from "../../../public/icons/StarIconSolid";
 import { StarIcon } from "@heroicons/react/24/outline";
 import { useFavoriteStore } from "@/store/favorite/favorite.store";
 import StakeModal from "../Modal/StakeModal";
-import { IAzurance } from "../../../types/azurance";
 import { tabSelect } from "@/constants/select.constant";
 import TimeRemine from "../TimeRemine/timeRemine";
 import { Search } from "../Search/search";
+import { useInsurances } from "@/hooks/insurance.hook";
+import { getDownloadURL, ref } from "firebase/storage";
+import { storage } from "@/utils/firebaseStorage";
+import { useWalletStore } from "@/store/wallet/wallet.store";
+import { InsuranceType } from "@/store/insurance/insurance.type";
+import { ethers } from "ethers";
 
-export default function AzuranceTable({ dataTable }: any) {
+export default function AzuranceTable() {
+
+  const [filter, setFilter] = useState("Ongoing");
+  const { insurances: insuranceList, fetchInsurances } = useInsurances(100, 0, filter);
+
+  const { currentChainId } = useWalletStore();
   const { favorites, addFavorite, removeFavorite } = useFavoriteStore();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("Ongoing");
-  const [insuranceList, setInsuranceList] = useState(dataTable);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
+
+  // TODO: Fix logo image template 
+  const getDownloadURLWithBackup = useCallback(async (chainId: string, address: string) => {
+    try {
+      return await getDownloadURL(ref(storage, `files/${chainId}-${address}.png`));
+    } catch (e) {
+      return `/insurances/AIA.png`
+    }
+  }, []);
 
   useEffect(() => {
-    if (filter === "Watchlist") {
-      setInsuranceList(favorites as any);
-    } else {
-      setInsuranceList(dataTable);
-    }
-  }, [filter]);
+    fetchInsurances();
+  }, [filter])
+
+  useEffect(() => {
+    const promises = insuranceList.map(insurance => getDownloadURLWithBackup(currentChainId, insurance.id));
+    Promise.all(promises).then(result => setImageUrls(result))
+  }, [insuranceList, currentChainId])
 
   const data = useMemo(() => {
     if (search) {
       const filtered = insuranceList.filter(
-        (obj: IAzurance) =>
-          obj.insuranceName.toLowerCase().includes(search.toLowerCase()) ||
+        (obj: InsuranceType) =>
+          obj.name.toLowerCase().includes(search.toLowerCase()) ||
           obj.symbol.toLowerCase().includes(search.toLowerCase())
       );
       return filtered;
@@ -41,7 +63,10 @@ export default function AzuranceTable({ dataTable }: any) {
     return insuranceList;
   }, [search, insuranceList]);
 
-  console.log({ data });
+  const handleSelect = (index: number) => {
+    setSelectedIndex(index);
+    onOpen();
+  }
 
   const renderFavorite = (id: string) => {
     if (favorites.find((item) => item.id === id)) {
@@ -51,13 +76,41 @@ export default function AzuranceTable({ dataTable }: any) {
     }
   };
 
-  const handleFavorite = (insurance: IAzurance) => {
+  const handleFavorite = (insurance: InsuranceType) => {
     if (!favorites.includes(insurance)) {
       addFavorite(insurance);
     } else {
       removeFavorite(insurance);
     }
   };
+
+  const getSellerShare = (index: number) => {
+    const insurance = insuranceList[index];
+    return Number(ethers.utils.formatEther(insurance.sellerShares))
+  }
+
+  const getBuyerShare = (index: number) => {
+    const insurance = insuranceList[index];
+    return Number(ethers.utils.formatEther(insurance.buyerShares))
+  }
+
+  const getMultiplier = (index: number) => {
+    const insurance = insuranceList[index];
+    return Number(ethers.utils.formatUnits(insurance.multiplier, insurance.multiplierDecimals));
+  }
+
+  const getTotalValue = (index: number) => {
+    const insurance = insuranceList[index];
+    return Number(ethers.utils.formatUnits(insurance.totalShares, insurance.underlyingToken.decimals));
+  }
+
+  const getUtilization = (index: number) => {
+    const sellerShare = getSellerShare(index)
+    const buyerShare = getBuyerShare(index)
+    const multiplier = getMultiplier(index)
+    if (sellerShare === 0) return 0;
+    return (buyerShare * multiplier / (sellerShare)) * 100
+  }
 
   return (
     <div className="bg-white w-full mt-5 rounded-xl">
@@ -81,9 +134,8 @@ export default function AzuranceTable({ dataTable }: any) {
               <td
                 key={column.field}
                 width={column.width}
-                className={`${
-                  column.field === "expiration" ? "text-center" : "text-start"
-                }`}
+                className={`${column.field === "expiration" ? "text-center" : "text-start"
+                  }`}
               >
                 {column.headerName}
               </td>
@@ -96,98 +148,84 @@ export default function AzuranceTable({ dataTable }: any) {
         <tbody className="text-center">
           {data?.length
             ? data
-                .sort((a: any, b: any) => {
-                  return a.id - b.id;
-                })
-                .map((item: any, index: number) => (
-                  <tr
-                    key={index}
-                    className={`${
-                      index !== data.length - 1 && `border-b `
-                    } h-[95px] text-gray-600 rounded-none hover:bg-gray-50 cursor-pointer`}
-                    onClick={() => {
-                      // router.push(`/file?oid=${data.id}`);
-                    }}
-                  >
-                    <td>
-                      <div
-                        className="flex w-full justify-center items-center"
-                        onClick={() => {
-                          handleFavorite(item);
-                        }}
-                      >
-                        {renderFavorite(item.id)}
-                      </div>
-                    </td>
-                    <td className="text-start">
-                      <div className="flex">
-                        <picture className="flex items-center">
-                          <img
-                            src={item.logo}
-                            width="36px"
-                            height="36px"
-                            alt="logo-chain"
-                          />
-                        </picture>
-                        <div className="text-start ml-2">
-                          <div className="text-sm font-semibold  text-[#0F1419]">
-                            {item.insuranceName}
-                          </div>
-                          <div className="max-w-[30px] text-[10px] bg-[#E5E5E6] rounded text-center py-[2px]">
-                            {item.symbol}
-                          </div>
+              .sort((a: InsuranceType, b: InsuranceType) => {
+                return b.createdAt - a.createdAt;
+              })
+              .map((item: InsuranceType, index: number) => (
+                <tr
+                  key={index}
+                  className={`${index !== data.length - 1 && `border-b `
+                    } h-[95px] text-gray-600 rounded-none hover:bg-gray-50`}
+                >
+                  <td>
+                    <div
+                      className="flex w-full justify-center items-center"
+                      onClick={() => {
+                        handleFavorite(item);
+                      }}
+                    >
+                      {renderFavorite(item.id)}
+                    </div>
+                  </td>
+                  <td className="text-start">
+                    <div className="flex">
+                      <picture className="flex items-center">
+                        <img
+                          src={imageUrls[index] || "/insurances/AIA.png"}
+                          width="36px"
+                          height="36px"
+                          alt="logo-chain"
+                        />
+                      </picture>
+                      <div className="text-start ml-2">
+                        <div className="text-sm font-semibold  text-[#0F1419]">
+                          {item.name}
+                        </div>
+                        <div className="max-w-[30px] text-[10px] bg-[#E5E5E6] rounded text-center py-[2px]">
+                          {item.symbol}
                         </div>
                       </div>
-                    </td>
-                    <td className="text-start  text-[#0F1419]">
-                      {formatFiatNumber(Number(item.price))}
-                    </td>
-                    <td className="text-start  text-[#0F1419]">{item.apr}%</td>
-                    <td className="text-start">
-                      <PercentageBar />
-                    </td>
-                    <td className="text-start  text-[#0F1419]">
-                      {formatFiatNumber(Number(item.totalSupply))}
-                    </td>
-                    <td>
-                      <div className="flex flex-col justify-center items-center my-auto ">
-                        <TimeRemine timeData={1702701987} />
-                      </div>
-                    </td>
-                    <td className="text-start px-4">
-                      <Button
-                        color="primary"
-                        className=" px-4"
-                        onClick={onOpen}
-                      >
-                        Stake Now
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                    </div>
+                  </td>
+                  <td className="text-start  text-[#0F1419]">{getMultiplier(index)}x</td>
+                  <td className="text-start">
+                    <PercentageBar utilization={getUtilization(index)} totalBuyer={getBuyerShare(index)} totalSeller={getSellerShare(index)} />
+                  </td>
+                  <td className="text-start  text-[#0F1419]">
+                    {formatDecimal(getTotalValue(index))}
+                  </td>
+                  <td>
+                    <div className="flex flex-col justify-center items-center my-auto ">
+                      <TimeRemine timeData={item.maturityTime} />
+                    </div>
+                  </td>
+                  <td className="text-start px-4">
+                    <Button
+                      color="primary"
+                      className=" px-4"
+                      onClick={() => handleSelect(index)}
+                    >
+                      Buy
+                    </Button>
+                  </td>
+                </tr>
+              ))
             : null}
         </tbody>
       </table>
-      <StakeModal
-        onOpenChange={onOpenChange}
-        isOpen={isOpen}
-        token1="DAI"
-        token2="sDAI"
-        header="Stake"
-        description="Staking does not diminish your DAI balance. Both your DAI
-and earned rewards can be reclaimed based on the
-applicable conversion ratio at redemption."
-      />
-      {/* <StakeModal
-        onOpenChange={onOpenChange}
-        isOpen={isOpen}
-        token1="DAI"
-        token2="AVL"
-        header="Claim"
-        description="After you successfully submit your stETH claim request
-your stETH will be frozen in your wallet, and you will be
-able to receive rewards."
-      /> */}
+      {
+        selectedInsurance && (
+          <StakeModal
+            isOpen={isOpen}
+            insurance={selectedInsurance}
+            header="Buy"
+            onOpenChange={onOpenChange}
+            onInsuranceUpdate={fetchInsurances}
+          />
+        )
+      }
+
     </div>
   );
 }
+

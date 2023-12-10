@@ -1,44 +1,65 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/router";
-// import FileStatusSelector from "./FileStatusSelector";
-import { SearchIcon } from "../../../public/icons/SearchIcon";
-import { columns, columnsInsurance } from "@/constants/mockTableData";
-import Image from "next/image";
-import { formatFiatNumber, formatDecimal } from "@/utils/formatNumber";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { columnsInsurance } from "@/constants/mockTableData";
+import { formatDecimal } from "@/utils/formatNumber";
 import PercentageBar from "../Slide/PercentageBar";
-import { ArrowRightIcon } from "../../../public/icons/ArrowRightIcon";
 import { AzuranceSelcet } from "./AzuranceSelect";
-import { Button, Input, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@nextui-org/react";
 import { StarIconSolid } from "../../../public/icons/StarIconSolid";
 import {
   ArrowDownTrayIcon,
   StarIcon,
-  WalletIcon,
 } from "@heroicons/react/24/outline";
 import { useFavoriteStore } from "@/store/favorite/favorite.store";
-import StakeModal from "../Modal/StakeModal";
-import { IAzurance } from "../../../types/azurance";
 import { tabSelect } from "@/constants/select.constant";
 import TimeRemine from "../TimeRemine/timeRemine";
 import { Search } from "../Search/search";
 import DepositModal from "../Modal/DepositModal";
+import { getDownloadURL, ref } from "firebase/storage";
+import { storage } from "@/utils/firebaseStorage";
+import { InsuranceType } from "@/store/insurance/insurance.type";
+import { useWalletStore } from "@/store/wallet/wallet.store";
+import { ethers } from "ethers";
+import { useInsurances } from "@/hooks/insurance.hook";
 
-export default function TableInsurance({ insuranceList, filter, onChangeFilter }: any) {
+export default function TableInsurance() {
 
+  const [filter, setFilter] = useState("Ongoing");
+  const { insurances: insuranceList, fetchInsurances } = useInsurances(100, 0, filter);
+
+  const { currentChainId } = useWalletStore();
   const { favorites, addFavorite, removeFavorite } = useFavoriteStore();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [isDisable, setIsDisable] = useState(false);
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
+  const [isDisable, setIsDisable] = useState(false);
+  const [search, setSearch] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+
   const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
 
-  const [search, setSearch] = useState("");
+  // TODO: Fix logo image template 
+  const getDownloadURLWithBackup = useCallback(async (chainId: string, address: string) => {
+    try {
+      return await getDownloadURL(ref(storage, `files/${chainId}-${address}.png`));
+    } catch (e) {
+      return `/insurances/AIA.png`
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInsurances();
+  }, [filter])
+
+  useEffect(() => {
+    const promises = insuranceList.map(insurance => getDownloadURLWithBackup(currentChainId, insurance.id));
+    Promise.all(promises).then(result => setImageUrls(result))
+  }, [insuranceList, currentChainId])
 
   const data = useMemo(() => {
     if (search) {
       const filtered = insuranceList.filter(
-        (obj: IAzurance) =>
-          obj.insuranceName.toLowerCase().includes(search.toLowerCase()) ||
+        (obj: InsuranceType) =>
+          obj.name.toLowerCase().includes(search.toLowerCase()) ||
           obj.symbol.toLowerCase().includes(search.toLowerCase())
       );
       return filtered;
@@ -46,14 +67,12 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
     return insuranceList;
   }, [search, insuranceList]);
 
-
   const handleSelect = (index: number) => {
     setSelectedIndex(index);
     onOpen();
   }
 
-
-  const handleFavorite = (insurance: IAzurance) => {
+  const handleFavorite = (insurance: InsuranceType) => {
     if (!favorites.includes(insurance)) {
       addFavorite(insurance);
     } else {
@@ -69,6 +88,46 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
     }
   };
 
+  const getSellerShare = (index: number) => {
+    const insurance = insuranceList[index];
+    return Number(ethers.utils.formatEther(insurance.sellerShares))
+  }
+
+  const getBuyerShare = (index: number) => {
+    const insurance = insuranceList[index];
+    return Number(ethers.utils.formatEther(insurance.buyerShares))
+  }
+
+  const getMultiplier = (index: number) => {
+    const insurance = insuranceList[index];
+    return Number(ethers.utils.formatUnits(insurance.multiplier, insurance.multiplierDecimals));
+  }
+
+  const getUtilization = (index: number) => {
+    const sellerShare = getSellerShare(index)
+    const buyerShare = getBuyerShare(index)
+    const multiplier = getMultiplier(index)
+    if (sellerShare === 0) return 0;
+    return (buyerShare * multiplier / (sellerShare)) * 100
+  }
+
+  const calculateInsuranceAPR = (index: number) => {
+    const insurance = insuranceList[index];
+
+    const totalValue = Number(ethers.utils.formatEther(insurance.totalValue))
+    if (totalValue === 0) return 0;
+
+    const sellerShare = getSellerShare(index)
+    const buyerShare = getBuyerShare(index)
+    const multiplier = Number(ethers.utils.formatUnits(insurance.multiplier, insurance.multiplierDecimals));
+
+    const adjustedSellerShare = sellerShare * multiplier;
+    const adjustedBuyerShare = buyerShare / multiplier;
+    const adjustedTotalShare = adjustedSellerShare + adjustedBuyerShare;
+    const sellerValue = adjustedSellerShare * totalValue / adjustedTotalShare;
+    return (sellerValue - sellerShare) / sellerShare * 100;
+  }
+
   return (
     <div className="bg-white w-full mt-5 rounded-xl">
       <div className="flex items-center justify-between p-4">
@@ -76,7 +135,7 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
           <AzuranceSelcet
             tabSelect={tabSelect}
             filter={filter}
-            setFilter={onChangeFilter}
+            setFilter={setFilter}
           />
         </div>
         <Search search={search} setSearch={setSearch} />
@@ -105,17 +164,14 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
         <tbody className="text-center">
           {data?.length
             ? data
-              .sort((a: any, b: any) => {
-                return a.id - b.id;
+              .sort((a: InsuranceType, b: InsuranceType) => {
+                return b.createdAt - a.createdAt;
               })
-              .map((item: any, index: number) => (
+              .map((item: InsuranceType, index: number) => (
                 <tr
                   key={index}
                   className={`${index !== data.length - 1 && `border-b `
-                    } h-[95px] text-gray-600 rounded-none hover:bg-gray-50 cursor-pointer`}
-                  onClick={() => {
-                    // router.push(`/file?oid=${data.id}`);
-                  }}
+                    } h-[95px] text-gray-600 rounded-none hover:bg-gray-50`}
                 >
                   <td>
                     <div
@@ -131,7 +187,7 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
                     <div className="flex">
                       <picture className="flex items-center">
                         <img
-                          src={item.logo}
+                          src={imageUrls[index] || "/insurances/AIA.png"}
                           width="36px"
                           height="36px"
                           alt="logo-chain"
@@ -139,7 +195,7 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
                       </picture>
                       <div className="text-start ml-2">
                         <div className="text-sm font-semibold text-[#0F1419]">
-                          {item.insuranceName}
+                          {item.name}
                         </div>
                         <div className="max-w-[30px] text-[10px] bg-[#E5E5E6] rounded text-center py-[2px]">
                           {item.symbol}
@@ -147,19 +203,20 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
                       </div>
                     </div>
                   </td>
-                  {/* <td className="text-start text-[#0F1419]">
-                      {formatFiatNumber(Number(item.price))}
-                    </td> */}
-                  <td className="text-start text-[#0F1419]">{item.apr}%</td>
+                  {/*TODO: Add tooltip saying. The APR presents the APR upon maturity. If the insurance is claimable by buyers, loss may occurs. Proceed with your caution.*/}
+                  <td className="text-start text-[#0F1419]">{
+                    formatDecimal(calculateInsuranceAPR(index), 0, 2)
+                  }%</td>
                   <td className="text-start  text-[#0F1419]">
-                    {formatFiatNumber(Number(item.totalSupply))}
+                    {formatDecimal(getSellerShare(index))} {item.underlyingToken.symbol}
                   </td>
+                  {/*TODO: Add tooltip saying. Utilization reflect how much liquidity is allocated by buyers. It can be calculated as "buyer * multiplier / seller"*/}
                   <td className="text-start">
-                    <PercentageBar />
+                    <PercentageBar utilization={getUtilization(index)} totalBuyer={getBuyerShare(index)} totalSeller={getSellerShare(index)} />
                   </td>
                   <td>
                     <div className="flex flex-col justify-center items-center my-auto ">
-                      <TimeRemine timeData={1702701987} />
+                      <TimeRemine timeData={item.maturityTime} />
                     </div>
                   </td>
                   <td className="text-start px-4">
@@ -182,7 +239,7 @@ export default function TableInsurance({ insuranceList, filter, onChangeFilter }
       </table>
       {
         selectedInsurance && (
-          <DepositModal onOpenChange={onOpenChange} isOpen={isOpen} token={selectedInsurance.tokenSymbol} tokenAddress={selectedInsurance.tokenAddress} outputToken={selectedInsurance.sellerToken} pool={selectedInsurance.id} />
+          <DepositModal onOpenChange={onOpenChange} onInsuranceUpdate={() => { fetchInsurances(); onClose(); }} isOpen={isOpen} insurance={selectedInsurance} />
         )
       }
     </div>
