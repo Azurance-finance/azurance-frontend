@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { tokens } from "@/constants/token";
 import {
   Button,
@@ -21,6 +21,9 @@ import { ethers } from "ethers";
 import tokenContractService from "@/services/contracts/mintableTokenContract.service";
 import { formatDecimal } from "@/utils/formatNumber";
 import azurancePoolContractService from "@/services/contracts/azurancePoolContract";
+import { getDownloadURL, ref } from "firebase/storage";
+import { storage } from "@/utils/firebaseStorage";
+import { useWalletStore } from "@/store/wallet/wallet.store";
 
 type StakeModalTypes = {
   header: string;
@@ -41,13 +44,14 @@ const StakeModal = ({
   insurance,
   description,
   onOpenChange,
-  onInsuranceUpdate
+  onInsuranceUpdate,
 }: StakeModalTypes) => {
-
   const [amount, setAmount] = React.useState("");
   const [availableAmount, setAvailableAmount] = useState(0);
   const [allowance, setAllowance] = useState(0);
   const wording = header === "Claim" ? "claiming" : "stacking";
+  const { currentChainId } = useWalletStore();
+  const [imageUrl, setImageUrls] = useState<string>();
 
   const [loading, setLoading] = useState(false);
 
@@ -61,19 +65,26 @@ const StakeModal = ({
   const now = Math.round(new Date().valueOf() / 1000);
 
   useEffect(() => {
-
     (async () => {
       if (provider) {
         const signer = provider?.getSigner();
         const address = await signer.getAddress();
 
-        const balance = await tokenContractService.getBalance(insurance.underlyingToken.id, provider, address);
-        const allowance = await tokenContractService.getAllowance(insurance.underlyingToken.id, provider, address, insurance.id);
+        const balance = await tokenContractService.getBalance(
+          insurance.underlyingToken.id,
+          provider,
+          address
+        );
+        const allowance = await tokenContractService.getAllowance(
+          insurance.underlyingToken.id,
+          provider,
+          address,
+          insurance.id
+        );
         setAvailableAmount(+balance);
-        setAllowance(+allowance)
+        setAllowance(+allowance);
       }
-    })()
-
+    })();
   }, [insurance, provider]);
 
   const handleBuy = async () => {
@@ -93,19 +104,24 @@ const StakeModal = ({
       }
     }
     setLoading(false);
-  }
+  };
 
   const handleApprove = async () => {
     if (provider) {
       try {
         const signer = provider?.getSigner();
-        await tokenContractService.approve(insurance.underlyingToken.id, signer, insurance.id, ethers.constants.MaxUint256);
+        await tokenContractService.approve(
+          insurance.underlyingToken.id,
+          signer,
+          insurance.id,
+          ethers.constants.MaxUint256
+        );
         setAllowance(Infinity);
       } catch (e) {
         console.error(e);
       }
     }
-  }
+  };
 
   const handleUnlockMaturity = async () => {
     if (provider) {
@@ -118,34 +134,41 @@ const StakeModal = ({
         console.error(e);
       }
     }
-  }
+  };
 
   const handleBuyInsurance = async () => {
     if (provider) {
       try {
         const signer = provider?.getSigner();
-        await azurancePoolContractService.buyInsurance(insurance.id, signer, ethers.utils.parseEther(amount));
+        await azurancePoolContractService.buyInsurance(
+          insurance.id,
+          signer,
+          ethers.utils.parseEther(amount)
+        );
         onOpenStack();
         onInsuranceUpdate();
         // TODO: Show modal successfully deposit
       } catch (e) {
-        console.error(e)
+        console.error(e);
       }
     }
-  }
+  };
 
   const handleCheckUnlockClaim = async () => {
     if (provider) {
       try {
         const signer = provider?.getSigner();
-        await azurancePoolContractService.checkUnlockClaim(insurance.id, signer);
+        await azurancePoolContractService.checkUnlockClaim(
+          insurance.id,
+          signer
+        );
         onInsuranceUpdate();
         // TODO: Show modal successfully unlock and suggest to navigate to "claim" page
       } catch (e) {
         console.error(e);
       }
     }
-  }
+  };
 
   const calculateShare = () => {
     const totalShares = +ethers.utils.formatEther(insurance.totalShares);
@@ -155,27 +178,45 @@ const StakeModal = ({
     } else {
       return (+amount * totalShares) / totalValue;
     }
-  }
+  };
 
   const calculateMaxDeposit = () => {
     const sellerShares = +ethers.utils.formatEther(insurance.sellerShares);
     const buyerShares = +ethers.utils.formatEther(insurance.buyerShares);
-    const multiplier = +ethers.utils.formatUnits(insurance.multiplier, insurance.multiplierDecimals);
+    const multiplier = +ethers.utils.formatUnits(
+      insurance.multiplier,
+      insurance.multiplierDecimals
+    );
 
     return sellerShares / multiplier - buyerShares;
-  }
+  };
 
   const getButtonMessage = () => {
     if (now > insurance.maturityTime) {
-      return "Unlock"
+      return "Unlock";
     } else if (now > insurance.staleTime) {
-      return "Sell ended"
+      return "Sell ended";
     } else if (allowance <= +amount) {
-      return "Approve"
+      return "Approve";
     } else {
-      return "Buy"
+      return "Buy";
     }
-  }
+  };
+
+  const getDownloadURLWithBackup = async (chainId: string, address: string) => {
+    try {
+      const url = await getDownloadURL(
+        ref(storage, `files/${chainId}-${address}.png`)
+      );
+      return setImageUrls(url);
+    } catch (e) {
+      return setImageUrls(`/insurances/AIA.png`);
+    }
+  };
+
+  useEffect(() => {
+    getDownloadURLWithBackup(currentChainId, insurance.id);
+  }, [insurance, currentChainId]);
 
   return (
     <>
@@ -198,7 +239,9 @@ const StakeModal = ({
                   label={`${header} amount`}
                   labelPlacement="outside"
                   placeholder="Enter amount"
-                  description={`Max deposit: ${calculateMaxDeposit()} ${insurance.underlyingToken.symbol}`}
+                  description={`Max deposit: ${calculateMaxDeposit()} ${
+                    insurance.underlyingToken.symbol
+                  }`}
                   endContent={
                     <div className="flex">
                       <div className="my-auto text-[#0052FF] text-xs font-semibold">
@@ -236,7 +279,6 @@ const StakeModal = ({
                     />
                   </div>
                 </div>
-                {/* TODO: Fix missizing token image */}
                 <Input
                   key="outside"
                   size="lg"
@@ -246,15 +288,14 @@ const StakeModal = ({
                   labelPlacement="outside"
                   placeholder="--"
                   endContent={
-                    <div className="flex">
-                      <Image
-                        src={`/insurances/AIA.png`}
+                    <div className="flex justify-end w-52">
+                      <img
+                        src={imageUrl as string}
                         alt="logo-token"
                         width={20}
                         height={20}
                       />
-
-                      <div className=" text-[#0F1419] text-sm font-normal pl-2 pr-4">
+                      <div className=" text-[#0F1419] text-sm font-normal pl-2">
                         {insurance.buyerToken.symbol}
                       </div>
                     </div>
@@ -264,18 +305,16 @@ const StakeModal = ({
                   value={formatDecimal(calculateShare())}
                 />
 
-                {
-                  description && (
-                    <div className=" bg-[#F1F5FD] rounded p-3 flex">
-                      <div>
-                        <NotiSolidIcon />
-                      </div>
-                      <p className=" text-sm font-normal text-[#000] ml-2 ">
-                        {description}
-                      </p>
+                {description && (
+                  <div className=" bg-[#F1F5FD] rounded p-3 flex">
+                    <div>
+                      <NotiSolidIcon />
                     </div>
-                  )
-                }
+                    <p className=" text-sm font-normal text-[#000] ml-2 ">
+                      {description}
+                    </p>
+                  </div>
+                )}
 
                 <div className=" border-1 border-[#E9EBED] rounded p-3 flex flex-col space-y-3">
                   {/* <div className=" flex justify-between">
@@ -290,7 +329,15 @@ const StakeModal = ({
                     <p className="text-[#A3A3A3] font-medium text-sm">
                       Claimable benefit
                     </p>
-                    <p className="text-[#0F1419] font-medium text-sm">{formatDecimal(+ethers.utils.formatUnits(insurance.multiplier, insurance.multiplierDecimals))}x</p>
+                    <p className="text-[#0F1419] font-medium text-sm">
+                      {formatDecimal(
+                        +ethers.utils.formatUnits(
+                          insurance.multiplier,
+                          insurance.multiplierDecimals
+                        )
+                      )}
+                      x
+                    </p>
                   </div>
                   <div className=" flex justify-between">
                     <p className="text-[#A3A3A3] font-medium text-sm">
@@ -314,8 +361,13 @@ const StakeModal = ({
                   >
                     {getButtonMessage()}
                   </Button>
-                  <div className="flex justify-center cursor-pointer" onClick={handleCheckUnlockClaim}>
-                    <p className="text-[#A3A3A3] font-s text-sm">You can request for claim by clicking here</p>
+                  <div
+                    className="flex justify-center cursor-pointer"
+                    onClick={handleCheckUnlockClaim}
+                  >
+                    <p className="text-[#A3A3A3] font-s text-sm">
+                      You can request for claim by clicking here
+                    </p>
                   </div>
                 </div>
               </ModalFooter>
@@ -327,7 +379,11 @@ const StakeModal = ({
         isOpen={isOpenStack}
         isLoading={false}
         title={`You are now ${wording} ${amount} ${insurance.underlyingToken.symbol}`}
-        description={`${wording} ${amount} ${insurance.underlyingToken.symbol}. You will receive ${formatDecimal(calculateShare())} ${insurance.buyerToken.symbol}`}
+        description={`${wording} ${amount} ${
+          insurance.underlyingToken.symbol
+        }. You will receive ${formatDecimal(calculateShare())} ${
+          insurance.buyerToken.symbol
+        }`}
         onOpenChange={onOpenChangeStack}
         isFooter={true}
       />
