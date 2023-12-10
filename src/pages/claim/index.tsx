@@ -1,6 +1,5 @@
 import TableStake from "@/components/Table/tableStake";
 import TopBanner from "@/components/TopBanner";
-import { stake } from "@/constants/mockTableData";
 import React from "react";
 
 const Claim = () => {
@@ -15,7 +14,7 @@ const Claim = () => {
           description="Decentralized insurance platform that providing flexible conditions on-chain"
           isCreateInsurance={false}
         />
-        <TableStake dataTable={stake} />
+        <TableStake />
       </div>
     </>
 
