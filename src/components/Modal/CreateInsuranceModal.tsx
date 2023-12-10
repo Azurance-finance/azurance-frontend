@@ -78,7 +78,6 @@ const CreateInsuranceModal = ({
 
   const handleCreateInsurance = useCallback(
     async (file: FileList) => {
-
       setCreating(true);
 
       try {
@@ -95,12 +94,8 @@ const CreateInsuranceModal = ({
           const multipler =
             insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
 
-          const maturityBlock = Math.floor(
-            (maturityTs / secondsPerBlock)
-          );
-          const staleBlock = Math.floor(
-            (staleTs / secondsPerBlock)
-          );
+          const maturityBlock = Math.floor(maturityTs / secondsPerBlock);
+          const staleBlock = Math.floor(staleTs / secondsPerBlock);
 
           const asset = CONTRACT_ADDRESS[currentChainId][insurance.token];
           const fee = 0;
@@ -126,10 +121,14 @@ const CreateInsuranceModal = ({
 
           const receipt = await tx.wait();
 
-          const event = receipt.events.find((e: any) => e.event === "InsuranceCreated");
+          const event = receipt.events.find(
+            (e: any) => e.event === "InsuranceCreated"
+          );
 
           if (event) {
-            const filename = `${currentChainId}-${event.args.target}.png`;
+            const filename = `${currentChainId}-${String(
+              event.args.target
+            ).toLowerCase()}.png`;
             uploadImage(file[0], filename);
           }
 
@@ -164,7 +163,7 @@ const CreateInsuranceModal = ({
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log("Download url: ", downloadURL)
+          console.log("Download url: ", downloadURL);
           setImgUrl(downloadURL as any);
         });
       }

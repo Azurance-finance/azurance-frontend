@@ -3,7 +3,7 @@ import { columnsInsurance } from "@/constants/mockTableData";
 import { formatDecimal } from "@/utils/formatNumber";
 import PercentageBar from "../Slide/PercentageBar";
 import { AzuranceSelcet } from "./AzuranceSelect";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, Tooltip, useDisclosure } from "@nextui-org/react";
 import { StarIconSolid } from "../../../public/icons/StarIconSolid";
 import { ArrowDownTrayIcon, StarIcon } from "@heroicons/react/24/outline";
 import { useFavoriteStore } from "@/store/favorite/favorite.store";
@@ -17,6 +17,7 @@ import { InsuranceType } from "@/store/insurance/insurance.type";
 import { useWalletStore } from "@/store/wallet/wallet.store";
 import { ethers } from "ethers";
 import { useInsurances } from "@/hooks/insurance.hook";
+import TooltipData from "../Notification/TooltipData";
 
 export default function TableInsurance() {
   const [filter, setFilter] = useState("Ongoing");
@@ -37,7 +38,6 @@ export default function TableInsurance() {
 
   const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
 
-  // TODO: Fix logo image template
   const getDownloadURLWithBackup = useCallback(
     async (chainId: string, address: string) => {
       try {
@@ -226,6 +226,17 @@ export default function TableInsurance() {
                     {/*TODO: Add tooltip saying. The APR presents the APR upon maturity. If the insurance is claimable by buyers, loss may occurs. Proceed with your caution.*/}
                     <td className="text-start text-[#0F1419]">
                       {formatDecimal(calculateInsuranceAPR(index), 0, 2)}%
+                      <Tooltip
+                        showArrow={true}
+                        content={
+                          <div>
+                            The APR presents the APR upon maturity. If the
+                            insurance is claimable by buyers, loss may occurs.
+                            Proceed with your caution.
+                          </div>
+                        }
+                        placement="bottom"
+                      ></Tooltip>
                     </td>
                     <td className="text-start  text-[#0F1419]">
                       {formatDecimal(getSellerShare(index))}{" "}

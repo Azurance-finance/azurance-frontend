@@ -45,7 +45,6 @@ export default function TableStake() {
 
   const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
 
-  // TODO: Fix logo image template
   const getDownloadURLWithBackup = useCallback(
     async (chainId: string, address: string) => {
       try {
@@ -328,7 +327,9 @@ export default function TableStake() {
                                 ? "bg-[#EAEBEF] text-[#BCBEC9] border-[#EAEBEF]"
                                 : "bg-[#0052FF] text-white border-[#0052FF]"
                             }`}
-                            onClick={onOpen}
+                            onClick={() => {
+                              handleSelect(index);
+                            }}
                             isDisabled={isDisable}
                           >
                             <WalletIcon

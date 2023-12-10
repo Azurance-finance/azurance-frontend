@@ -36,7 +36,6 @@ export default function AzuranceTable() {
 
   const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
 
-  // TODO: Fix logo image template
   const getDownloadURLWithBackup = useCallback(
     async (chainId: string, address: string) => {
       try {

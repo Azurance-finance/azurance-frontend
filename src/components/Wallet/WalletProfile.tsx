@@ -20,18 +20,15 @@ export default function WalletProfile() {
   const [isClient, setIsClient] = useState(false);
   const [balance, setBalance] = useState("0");
 
-
-
   const handleSignOut = () => disconnect();
 
   const handleCopyAddress = async () => {
-    // TODO: test sign message
     // const signer = provider?.getSigner();
     // console.log(signer);
     // console.log(await signer?.signMessage('hello'));
     navigator.clipboard.writeText(walletAddress);
     toast.success("Copied !!!");
-  }
+  };
 
   useEffect(() => {
     const getBalance = async () => {
