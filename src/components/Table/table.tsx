@@ -28,7 +28,7 @@ export default function AzuranceTable() {
 
   const { currentChainId } = useWalletStore();
   const { favorites, addFavorite, removeFavorite } = useFavoriteStore();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
   const [search, setSearch] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -248,6 +248,7 @@ export default function AzuranceTable() {
           header="Buy"
           onOpenChange={onOpenChange}
           onInsuranceUpdate={fetchInsurances}
+          onClose={onClose}
         />
       )}
     </div>

@@ -18,6 +18,9 @@ import { useWalletStore } from "@/store/wallet/wallet.store";
 import { ethers } from "ethers";
 import { useInsurances } from "@/hooks/insurance.hook";
 import TooltipData from "../Notification/TooltipData";
+import TooltipWarning from "../Tooltip/TooltipWarning";
+import NotiSolidIcon from "../Icon/NotiSolidIcon";
+import NotiIcon from "../Icon/NotiIcon";
 
 export default function TableInsurance() {
   const [filter, setFilter] = useState("Ongoing");
@@ -171,7 +174,29 @@ export default function TableInsurance() {
                   column.field === "expiration" ? "text-center" : "text-start"
                 }`}
               >
-                {column.headerName}
+                {column.headerName === "APR" ? (
+                  <div className="flex">
+                    <div className="my-auto">{column.headerName}</div>
+                    <TooltipWarning description="The APR presents the APR upon maturity. If the insurance is claimable by buyers, loss may occurs. Proceed with your caution.">
+                      <div className=" ml-1 cursor-pointer">
+                        <NotiIcon color="#565762" />
+                      </div>
+                    </TooltipWarning>
+                  </div>
+                ) : column.headerName === "Utilization" ? (
+                  <div className="flex">
+                    <div className="my-auto">{column.headerName}</div>
+                    <TooltipWarning
+                      description={`Utilization reflect how much liquidity is allocated by buyers. It can be calculated as "buyer * multiplier / seller"`}
+                    >
+                      <div className=" ml-1 cursor-pointer">
+                        <NotiIcon color="#565762" />
+                      </div>
+                    </TooltipWarning>
+                  </div>
+                ) : (
+                  <div>{column.headerName}</div>
+                )}
               </td>
             ))}
             <td width="" className="text-center">
@@ -223,26 +248,15 @@ export default function TableInsurance() {
                         </div>
                       </div>
                     </td>
-                    {/*TODO: Add tooltip saying. The APR presents the APR upon maturity. If the insurance is claimable by buyers, loss may occurs. Proceed with your caution.*/}
                     <td className="text-start text-[#0F1419]">
-                      {formatDecimal(calculateInsuranceAPR(index), 0, 2)}%
-                      <Tooltip
-                        showArrow={true}
-                        content={
-                          <div>
-                            The APR presents the APR upon maturity. If the
-                            insurance is claimable by buyers, loss may occurs.
-                            Proceed with your caution.
-                          </div>
-                        }
-                        placement="bottom"
-                      ></Tooltip>
+                      <div className=" cursor-pointer">
+                        {formatDecimal(calculateInsuranceAPR(index), 0, 2)}%
+                      </div>
                     </td>
                     <td className="text-start  text-[#0F1419]">
                       {formatDecimal(getSellerShare(index))}{" "}
                       {item.underlyingToken.symbol}
                     </td>
-                    {/*TODO: Add tooltip saying. Utilization reflect how much liquidity is allocated by buyers. It can be calculated as "buyer * multiplier / seller"*/}
                     <td className="text-start">
                       <PercentageBar
                         utilization={getUtilization(index)}
@@ -283,6 +297,8 @@ export default function TableInsurance() {
           }}
           isOpen={isOpen}
           insurance={selectedInsurance}
+          onClose={onClose}
+          description="The deposited tokens are locked until the insurance is claimable, matured, or terminated."
         />
       )}
     </div>

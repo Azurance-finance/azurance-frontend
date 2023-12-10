@@ -32,6 +32,7 @@ type StakeModalTypes = {
   description?: string;
   onOpenChange: () => void;
   onInsuranceUpdate: () => void;
+  onClose: () => void;
 };
 const borderedStyle = {
   inputWrapper: `border-1 border-[#D0D5DD]`,
@@ -45,6 +46,7 @@ const StakeModal = ({
   description,
   onOpenChange,
   onInsuranceUpdate,
+  onClose,
 }: StakeModalTypes) => {
   const [amount, setAmount] = React.useState("");
   const [availableAmount, setAvailableAmount] = useState(0);
@@ -56,9 +58,20 @@ const StakeModal = ({
   const [loading, setLoading] = useState(false);
 
   const {
+    onOpen: onOpenBuy,
+    onOpenChange: onOpenChangeBuy,
+    isOpen: isOpenBuyModal,
+  } = useDisclosure();
+
+  const {
     isOpen: isOpenStack,
     onOpen: onOpenStack,
     onOpenChange: onOpenChangeStack,
+  } = useDisclosure();
+  const {
+    onOpen: onOpenUnlock,
+    onOpenChange: onOpenChangeUnlock,
+    isOpen: isOpenUnlockModal,
   } = useDisclosure();
 
   const { provider } = useProvider();
@@ -129,7 +142,8 @@ const StakeModal = ({
         const signer = provider?.getSigner();
         await azurancePoolContractService.unlockMaturity(insurance.id, signer);
         onInsuranceUpdate();
-        // TODO: Show modal successfully unlock and suggest to navigate to "claim" page
+        onOpenUnlock();
+        onClose();
       } catch (e) {
         console.error(e);
       }
@@ -147,7 +161,8 @@ const StakeModal = ({
         );
         onOpenStack();
         onInsuranceUpdate();
-        // TODO: Show modal successfully deposit
+        onOpenBuy();
+        onClose();
       } catch (e) {
         console.error(e);
       }
@@ -163,7 +178,8 @@ const StakeModal = ({
           signer
         );
         onInsuranceUpdate();
-        // TODO: Show modal successfully unlock and suggest to navigate to "claim" page
+        onOpenUnlock();
+        onClose();
       } catch (e) {
         console.error(e);
       }
@@ -289,12 +305,14 @@ const StakeModal = ({
                   placeholder="--"
                   endContent={
                     <div className="flex justify-end w-52">
-                      <img
-                        src={imageUrl as string}
-                        alt="logo-token"
-                        width={20}
-                        height={20}
-                      />
+                      <picture>
+                        <img
+                          src={imageUrl as string}
+                          alt="logo-token"
+                          width={20}
+                          height={20}
+                        />
+                      </picture>
                       <div className=" text-[#0F1419] text-sm font-normal pl-2">
                         {insurance.buyerToken.symbol}
                       </div>
@@ -362,10 +380,10 @@ const StakeModal = ({
                     {getButtonMessage()}
                   </Button>
                   <div
-                    className="flex justify-center cursor-pointer"
+                    className="flex justify-center cursor-pointer mt-2"
                     onClick={handleCheckUnlockClaim}
                   >
-                    <p className="text-[#A3A3A3] font-s text-sm">
+                    <p className="text-[#A3A3A3] font-medium  text-xs">
                       You can request for claim by clicking here
                     </p>
                   </div>
@@ -386,6 +404,23 @@ const StakeModal = ({
         }`}
         onOpenChange={onOpenChangeStack}
         isFooter={true}
+      />
+      <StatusModal
+        isOpen={isOpenBuyModal}
+        isLoading={false}
+        onOpenChange={onOpenChangeBuy}
+        isFooter={false}
+        title="Buy successfully"
+        description="Your request has been confirmed."
+      />
+      <StatusModal
+        isOpen={isOpenUnlockModal}
+        isLoading={false}
+        onOpenChange={onOpenChangeUnlock}
+        isFooter={true}
+        title="Your liquidity has expired"
+        description="Your liquidity has been expired. Please refresh to
+the Claim page for claim token."
       />
     </>
   );

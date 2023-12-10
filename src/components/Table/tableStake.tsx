@@ -34,7 +34,7 @@ export default function TableStake() {
 
   const { currentChainId, walletAddress } = useWalletStore();
   const { favorites, addFavorite, removeFavorite } = useFavoriteStore();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
   const [search, setSearch] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -353,6 +353,7 @@ export default function TableStake() {
           header="Buy"
           onOpenChange={onOpenChange}
           onInsuranceUpdate={fetchInsurances}
+          onClose={onClose}
         />
       )}
     </div>
