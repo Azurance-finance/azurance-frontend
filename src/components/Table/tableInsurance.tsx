@@ -20,24 +20,22 @@ import { InsuranceType } from "@/store/insurance/insurance.type";
 import { useWalletStore } from "@/store/wallet/wallet.store";
 import { ethers } from "ethers";
 import { useInsurances } from "@/hooks/insurance.hook";
-import axios from "axios";
 
 export default function TableInsurance() {
 
   const [filter, setFilter] = useState("Ongoing");
   const { insurances: insuranceList, fetchInsurances } = useInsurances(100, 0, filter);
 
+  const { currentChainId } = useWalletStore();
   const { favorites, addFavorite, removeFavorite } = useFavoriteStore();
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+
   const [isDisable, setIsDisable] = useState(false);
-
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
-
   const [search, setSearch] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const { currentChainId } = useWalletStore();
+  const selectedInsurance = insuranceList ? insuranceList[selectedIndex] : null;
 
   // TODO: Fix logo image template 
   const getDownloadURLWithBackup = useCallback(async (chainId: string, address: string) => {
@@ -109,9 +107,8 @@ export default function TableInsurance() {
     const sellerShare = getSellerShare(index)
     const buyerShare = getBuyerShare(index)
     const multiplier = getMultiplier(index)
-    const totalShare = sellerShare + buyerShare;
-    if (totalShare === 0) return 0;
-    return (buyerShare * multiplier / (sellerShare + buyerShare)) * 100
+    if (sellerShare === 0) return 0;
+    return (buyerShare * multiplier / (sellerShare)) * 100
   }
 
   const calculateInsuranceAPR = (index: number) => {
@@ -208,10 +205,10 @@ export default function TableInsurance() {
                   </td>
                   {/*TODO: Add tooltip saying. The APR presents the APR upon maturity. If the insurance is claimable by buyers, loss may occurs. Proceed with your caution.*/}
                   <td className="text-start text-[#0F1419]">{
-                    calculateInsuranceAPR(index)
+                    formatDecimal(calculateInsuranceAPR(index), 0, 2)
                   }%</td>
                   <td className="text-start  text-[#0F1419]">
-                    {formatDecimal(Number(ethers.utils.formatUnits(item.totalValue, item.underlyingToken.decimals)))} {item.underlyingToken.symbol}
+                    {formatDecimal(getSellerShare(index))} {item.underlyingToken.symbol}
                   </td>
                   {/*TODO: Add tooltip saying. Utilization reflect how much liquidity is allocated by buyers. It can be calculated as "buyer * multiplier / seller"*/}
                   <td className="text-start">

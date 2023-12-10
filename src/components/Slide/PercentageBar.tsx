@@ -2,6 +2,7 @@ import React from "react";
 import { Slider, Tooltip } from "@nextui-org/react";
 import { UserIcon } from "@heroicons/react/24/solid";
 import TooltipData from "../Notification/TooltipData";
+import { formatDecimal } from "@/utils/formatNumber";
 
 type Props = {
   totalBuyer: number,
@@ -15,7 +16,7 @@ const PercentageBar: React.FC<Props> = ({ totalBuyer, totalSeller, utilization }
       <div className="flex">
         <UserIcon width={16} height={16} className="my-auto text-[#0052FF]" />
         <p className=" text-sm font-bold text-[#0052FF] my-auto ml-1">
-          {utilization}%
+          {formatDecimal(utilization, 0, 2)}%
         </p>
       </div>
       <Tooltip

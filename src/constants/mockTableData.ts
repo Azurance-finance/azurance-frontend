@@ -6,8 +6,8 @@ const columns = [
     sortable: false,
     width: "15%",
   },
-  { field: "price", headerName: "Price", sortable: false, width: "10%" },
-  { field: "apy", headerName: "APY", sortable: true, width: "10%" },
+  // { field: "price", headerName: "Price", sortable: false, width: "10%" },
+  { field: "benefit", headerName: "Benefit", sortable: true, width: "10%" },
   {
     field: "utilization",
     headerName: "Utilization",

@@ -1,6 +1,5 @@
 import TopBanner from "@/components/TopBanner";
 import Table from "../components/Table/table";
-import { azurance } from "@/constants/mockTableData";
 
 export default function Home() {
   return (
@@ -14,7 +13,7 @@ export default function Home() {
           description="Decentralized insurance platform that providing flexible conditions on-chain"
           isCreateInsurance={false}
         />
-        <Table dataTable={azurance} />
+        <Table />
       </div>
     </>
 

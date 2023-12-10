@@ -18,6 +18,7 @@ import {
 } from "@nextui-org/react";
 import { ethers } from "ethers";
 import React, { useEffect, useState } from "react";
+import NotiSolidIcon from "../Icon/NotiSolidIcon";
 const borderedStyle = {
   inputWrapper: `border-1 border-[#D0D5DD]`,
   label: `text-[#5B616E] text-sm font-normal`,
@@ -30,10 +31,11 @@ const triggerStyle = {
 type DepositModalTypes = {
   isOpen: boolean;
   insurance: InsuranceType;
+  description?: string;
   onOpenChange: () => void;
   onInsuranceUpdate: () => void;
 };
-const DepositModal = ({ isOpen, insurance, onOpenChange, onInsuranceUpdate }: DepositModalTypes) => {
+const DepositModal = ({ isOpen, insurance, description, onOpenChange, onInsuranceUpdate }: DepositModalTypes) => {
   const [amount, setAmount] = useState("");
   const [availableAmount, setAvailableAmount] = useState(0);
   const [allowance, setAllowance] = useState(0);
@@ -213,6 +215,19 @@ const DepositModal = ({ isOpen, insurance, onOpenChange, onInsuranceUpdate }: De
                 Available: {availableAmount.toFixed(2)}
                 {insurance.underlyingToken.symbol}
               </div>
+
+              {
+                description && (
+                  <div className=" bg-[#F1F5FD] rounded p-3 flex">
+                    <div>
+                      <NotiSolidIcon />
+                    </div>
+                    <p className=" text-sm font-normal text-[#000] ml-2 ">
+                      {description}
+                    </p>
+                  </div>
+                )
+              }
 
               <div className=" border-1 border-[#E9EBED] rounded p-3 flex flex-col space-y-3">
                 <div className=" flex justify-between">

@@ -12,7 +12,7 @@ const TooltipData = ({ totalBuyer, totalSeller, utilization }: TooltipDataTypes)
     <div className=" w-[260px] p-2">
       <div className="flex justify-between text-sm text-[#A3A3A3] font-bold">
         <p>Percentage</p>
-        <p className=" text-[#0F1419] text-sm font-bold">{utilization}%</p>
+        <p className=" text-[#0F1419] text-sm font-bold">{formatDecimal(utilization, 0, 2)}%</p>
       </div>
       <Slider
         aria-label="Player progress"
