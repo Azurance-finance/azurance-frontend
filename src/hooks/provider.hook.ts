@@ -11,6 +11,7 @@ export const useProvider = () => {
     signOut: comethSignOut,
     instance: comethInfo,
   } = useCometh();
+
   const {
     provider: metaMaskProvider,
     disconnect: metaMaskDisconnect,

@@ -1,5 +1,6 @@
 import React from "react";
 import CloseIcon from "../Icon/CloseIcon";
+import Link from "next/link";
 type TopNotiTypes = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -7,12 +8,17 @@ const TopNoti = ({ setOpen }: TopNotiTypes) => {
   return (
     <div className="h-12 py-3 relative bg-gradient-to-b from-blue-600 to-blue-700 w-full flex justify-center">
       <h1 className=" text-white text-xs my-auto font-medium">
-        Decentralized insurance platform that providing flexible conditions
-        on-chain
+        Winner of the Defi and Payment at Constellation a Chainlink hackathon
       </h1>
-      <h1 className=" bg-white text-[#0052FF] text-xs py-1 px-2 rounded-md ml-2 font-medium">
-        Stay tuned
-      </h1>
+      <Link
+        href="https://devpost.com/software/azurance"
+        passHref
+        target="_blank"
+      >
+        <h1 className=" bg-white text-[#0052FF] text-xs py-1 px-2 rounded-md ml-2 font-medium">
+          Showcase
+        </h1>
+      </Link>
 
       <div
         onClick={() => setOpen(true)}
