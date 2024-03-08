@@ -94,8 +94,11 @@ const CreateInsuranceModal = ({
           const multipler =
             insurance.benefitMultiplier * Math.pow(10, multiplerDecimals);
 
-          const maturityBlock = Math.floor(maturityTs / secondsPerBlock);
-          const staleBlock = Math.floor(staleTs / secondsPerBlock);
+          // const maturityBlock = Math.floor(maturityTs / secondsPerBlock);
+          // const staleBlock = Math.floor(staleTs / secondsPerBlock);
+
+          const maturityTimestamp = Math.floor(maturityTs);
+          const staleTimestamp = Math.floor(staleTs);
 
           const asset = CONTRACT_ADDRESS[currentChainId][insurance.token];
           const fee = 0;
@@ -109,8 +112,8 @@ const CreateInsuranceModal = ({
               contractAddress,
               signer,
               multipler,
-              maturityBlock,
-              staleBlock,
+              maturityTimestamp,
+              staleTimestamp,
               asset,
               fee,
               feeTo,
@@ -142,7 +145,15 @@ const CreateInsuranceModal = ({
 
       setCreating(false);
     },
-    [provider, currentChainId, insurance, secondsPerBlock, fetchInsurances, onOpenSuccess, onClose]
+    [
+      provider,
+      currentChainId,
+      insurance,
+      secondsPerBlock,
+      fetchInsurances,
+      onOpenSuccess,
+      onClose,
+    ]
   );
 
   const uploadImage = async (file: File, filename: string) => {
