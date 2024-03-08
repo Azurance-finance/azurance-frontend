@@ -12,6 +12,11 @@ directive @subgraphId(id: String!) on OBJECT
 "creates a virtual field on the entity that may be queried but cannot be set manually through the mappings API."
 directive @derivedFrom(field: String!) on FIELD_DEFINITION
 
+enum Aggregation_interval {
+  hour
+  day
+}
+
 scalar BigDecimal
 
 scalar BigInt
@@ -32,8 +37,8 @@ type InsurancePool {
   id: ID!
   multiplier: BigInt!
   multiplierDecimals: BigInt!
-  maturityBlock: BigInt!
-  staleBlock: BigInt!
+  maturityTimestamp: BigInt!
+  staleTimestamp: BigInt!
   underlyingToken: Token!
   fee: BigInt!
   feeDecimals: BigInt!
@@ -76,22 +81,22 @@ input InsurancePool_filter {
   multiplierDecimals_lte: BigInt
   multiplierDecimals_in: [BigInt!]
   multiplierDecimals_not_in: [BigInt!]
-  maturityBlock: BigInt
-  maturityBlock_not: BigInt
-  maturityBlock_gt: BigInt
-  maturityBlock_lt: BigInt
-  maturityBlock_gte: BigInt
-  maturityBlock_lte: BigInt
-  maturityBlock_in: [BigInt!]
-  maturityBlock_not_in: [BigInt!]
-  staleBlock: BigInt
-  staleBlock_not: BigInt
-  staleBlock_gt: BigInt
-  staleBlock_lt: BigInt
-  staleBlock_gte: BigInt
-  staleBlock_lte: BigInt
-  staleBlock_in: [BigInt!]
-  staleBlock_not_in: [BigInt!]
+  maturityTimestamp: BigInt
+  maturityTimestamp_not: BigInt
+  maturityTimestamp_gt: BigInt
+  maturityTimestamp_lt: BigInt
+  maturityTimestamp_gte: BigInt
+  maturityTimestamp_lte: BigInt
+  maturityTimestamp_in: [BigInt!]
+  maturityTimestamp_not_in: [BigInt!]
+  staleTimestamp: BigInt
+  staleTimestamp_not: BigInt
+  staleTimestamp_gt: BigInt
+  staleTimestamp_lt: BigInt
+  staleTimestamp_gte: BigInt
+  staleTimestamp_lte: BigInt
+  staleTimestamp_in: [BigInt!]
+  staleTimestamp_not_in: [BigInt!]
   underlyingToken: String
   underlyingToken_not: String
   underlyingToken_gt: String
@@ -265,8 +270,8 @@ enum InsurancePool_orderBy {
   id
   multiplier
   multiplierDecimals
-  maturityBlock
-  staleBlock
+  maturityTimestamp
+  staleTimestamp
   underlyingToken
   underlyingToken__id
   underlyingToken__name
@@ -506,6 +511,8 @@ type _Block_ {
   number: Int!
   """Integer representation of the timestamp stored in blocks for the chain"""
   timestamp: Int
+  """The hash of the parent block"""
+  parentHash: Bytes
 }
 
 """The type for the top-level _meta field"""

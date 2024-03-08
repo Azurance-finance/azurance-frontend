@@ -44,6 +44,10 @@ export type Scalars = {
   Int8: any;
 };
 
+export type Aggregation_interval =
+  | 'hour'
+  | 'day';
+
 export type BlockChangedFilter = {
   number_gte: Scalars['Int'];
 };
@@ -58,8 +62,8 @@ export type InsurancePool = {
   id: Scalars['ID'];
   multiplier: Scalars['BigInt'];
   multiplierDecimals: Scalars['BigInt'];
-  maturityBlock: Scalars['BigInt'];
-  staleBlock: Scalars['BigInt'];
+  maturityTimestamp: Scalars['BigInt'];
+  staleTimestamp: Scalars['BigInt'];
   underlyingToken: Token;
   fee: Scalars['BigInt'];
   feeDecimals: Scalars['BigInt'];
@@ -102,22 +106,22 @@ export type InsurancePool_filter = {
   multiplierDecimals_lte?: InputMaybe<Scalars['BigInt']>;
   multiplierDecimals_in?: InputMaybe<Array<Scalars['BigInt']>>;
   multiplierDecimals_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
-  maturityBlock?: InputMaybe<Scalars['BigInt']>;
-  maturityBlock_not?: InputMaybe<Scalars['BigInt']>;
-  maturityBlock_gt?: InputMaybe<Scalars['BigInt']>;
-  maturityBlock_lt?: InputMaybe<Scalars['BigInt']>;
-  maturityBlock_gte?: InputMaybe<Scalars['BigInt']>;
-  maturityBlock_lte?: InputMaybe<Scalars['BigInt']>;
-  maturityBlock_in?: InputMaybe<Array<Scalars['BigInt']>>;
-  maturityBlock_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
-  staleBlock?: InputMaybe<Scalars['BigInt']>;
-  staleBlock_not?: InputMaybe<Scalars['BigInt']>;
-  staleBlock_gt?: InputMaybe<Scalars['BigInt']>;
-  staleBlock_lt?: InputMaybe<Scalars['BigInt']>;
-  staleBlock_gte?: InputMaybe<Scalars['BigInt']>;
-  staleBlock_lte?: InputMaybe<Scalars['BigInt']>;
-  staleBlock_in?: InputMaybe<Array<Scalars['BigInt']>>;
-  staleBlock_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
+  maturityTimestamp?: InputMaybe<Scalars['BigInt']>;
+  maturityTimestamp_not?: InputMaybe<Scalars['BigInt']>;
+  maturityTimestamp_gt?: InputMaybe<Scalars['BigInt']>;
+  maturityTimestamp_lt?: InputMaybe<Scalars['BigInt']>;
+  maturityTimestamp_gte?: InputMaybe<Scalars['BigInt']>;
+  maturityTimestamp_lte?: InputMaybe<Scalars['BigInt']>;
+  maturityTimestamp_in?: InputMaybe<Array<Scalars['BigInt']>>;
+  maturityTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
+  staleTimestamp?: InputMaybe<Scalars['BigInt']>;
+  staleTimestamp_not?: InputMaybe<Scalars['BigInt']>;
+  staleTimestamp_gt?: InputMaybe<Scalars['BigInt']>;
+  staleTimestamp_lt?: InputMaybe<Scalars['BigInt']>;
+  staleTimestamp_gte?: InputMaybe<Scalars['BigInt']>;
+  staleTimestamp_lte?: InputMaybe<Scalars['BigInt']>;
+  staleTimestamp_in?: InputMaybe<Array<Scalars['BigInt']>>;
+  staleTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']>>;
   underlyingToken?: InputMaybe<Scalars['String']>;
   underlyingToken_not?: InputMaybe<Scalars['String']>;
   underlyingToken_gt?: InputMaybe<Scalars['String']>;
@@ -291,8 +295,8 @@ export type InsurancePool_orderBy =
   | 'id'
   | 'multiplier'
   | 'multiplierDecimals'
-  | 'maturityBlock'
-  | 'staleBlock'
+  | 'maturityTimestamp'
+  | 'staleTimestamp'
   | 'underlyingToken'
   | 'underlyingToken__id'
   | 'underlyingToken__name'
@@ -509,6 +513,8 @@ export type _Block_ = {
   number: Scalars['Int'];
   /** Integer representation of the timestamp stored in blocks for the chain */
   timestamp?: Maybe<Scalars['Int']>;
+  /** The hash of the parent block */
+  parentHash?: Maybe<Scalars['Bytes']>;
 };
 
 /** The type for the top-level _meta field */
@@ -619,6 +625,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  Aggregation_interval: Aggregation_interval;
   BigDecimal: ResolverTypeWrapper<Scalars['BigDecimal']>;
   BigInt: ResolverTypeWrapper<Scalars['BigInt']>;
   BlockChangedFilter: BlockChangedFilter;
@@ -699,8 +706,8 @@ export type InsurancePoolResolvers<ContextType = MeshContext, ParentType extends
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   multiplier?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   multiplierDecimals?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  maturityBlock?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  staleBlock?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  maturityTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  staleTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   underlyingToken?: Resolver<ResolversTypes['Token'], ParentType, ContextType>;
   fee?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   feeDecimals?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
@@ -751,6 +758,7 @@ export type _Block_Resolvers<ContextType = MeshContext, ParentType extends Resol
   hash?: Resolver<Maybe<ResolversTypes['Bytes']>, ParentType, ContextType>;
   number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   timestamp?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  parentHash?: Resolver<Maybe<ResolversTypes['Bytes']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -826,7 +834,7 @@ const azuranceTransforms = [];
 const additionalTypeDefs = [] as any[];
 const azuranceHandler = new GraphqlHandler({
               name: "azurance",
-              config: {"endpoint":"https://api.studio.thegraph.com/query/44385/azurance/version/latest"},
+              config: {"endpoint":"https://api.studio.thegraph.com/query/67556/azurance/version/latest"},
               baseDir,
               cache,
               pubsub,
@@ -916,7 +924,7 @@ export type ActiveInsuranceQueryVariables = Exact<{
 
 
 export type ActiveInsuranceQuery = { insurancePools: Array<(
-    Pick<InsurancePool, 'id' | 'status' | 'condition' | 'fee' | 'feeDecimals' | 'feeTo' | 'maturityBlock' | 'multiplier' | 'multiplierDecimals' | 'staleBlock' | 'buyerValue' | 'sellerValue' | 'totalValue' | 'buyerShares' | 'sellerShares' | 'totalShares' | 'createdAt'>
+    Pick<InsurancePool, 'id' | 'status' | 'condition' | 'fee' | 'feeDecimals' | 'feeTo' | 'maturityTimestamp' | 'staleTimestamp' | 'multiplier' | 'multiplierDecimals' | 'buyerValue' | 'sellerValue' | 'totalValue' | 'buyerShares' | 'sellerShares' | 'totalShares' | 'createdAt'>
     & { underlyingToken: Pick<Token, 'id' | 'name' | 'symbol' | 'decimals'>, buyerToken: Pick<Token, 'id' | 'name' | 'symbol'>, sellerToken: Pick<Token, 'id' | 'name' | 'symbol'> }
   )> };
 
@@ -927,7 +935,7 @@ export type InactiveInsuranceQueryVariables = Exact<{
 
 
 export type InactiveInsuranceQuery = { insurancePools: Array<(
-    Pick<InsurancePool, 'id' | 'status' | 'condition' | 'fee' | 'feeDecimals' | 'feeTo' | 'maturityBlock' | 'multiplier' | 'multiplierDecimals' | 'staleBlock' | 'buyerValue' | 'sellerValue' | 'totalValue' | 'buyerShares' | 'sellerShares' | 'totalShares' | 'createdAt'>
+    Pick<InsurancePool, 'id' | 'status' | 'condition' | 'fee' | 'feeDecimals' | 'feeTo' | 'maturityTimestamp' | 'staleTimestamp' | 'multiplier' | 'multiplierDecimals' | 'buyerValue' | 'sellerValue' | 'totalValue' | 'buyerShares' | 'sellerShares' | 'totalShares' | 'createdAt'>
     & { underlyingToken: Pick<Token, 'id' | 'name' | 'symbol' | 'decimals'>, buyerToken: Pick<Token, 'id' | 'name' | 'symbol'>, sellerToken: Pick<Token, 'id' | 'name' | 'symbol'> }
   )> };
 
@@ -947,10 +955,10 @@ export const ActiveInsuranceDocument = gql`
     fee
     feeDecimals
     feeTo
-    maturityBlock
+    maturityTimestamp
+    staleTimestamp
     multiplier
     multiplierDecimals
-    staleBlock
     buyerValue
     sellerValue
     totalValue
@@ -992,10 +1000,10 @@ export const InactiveInsuranceDocument = gql`
     fee
     feeDecimals
     feeTo
-    maturityBlock
+    maturityTimestamp
+    staleTimestamp
     multiplier
     multiplierDecimals
-    staleBlock
     buyerValue
     sellerValue
     totalValue

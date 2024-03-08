@@ -3,7 +3,8 @@ sources:
   - name: azurance
     handler:
       graphql:
-        endpoint: https://api.studio.thegraph.com/query/44385/azurance/version/latest
+        endpoint: https://api.studio.thegraph.com/query/67556/azurance/version/latest
+
 
 documents:
   - ./queries/active-insurance.graphql

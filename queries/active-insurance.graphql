@@ -1,18 +1,21 @@
-query ActiveInsurance(
-  $first: Int = 100
-  $skip: Int = 0
-) {
-  insurancePools(first: $first, skip:$skip, orderBy: createdAt, orderDirection: desc, where: {status: 0}) {
+query ActiveInsurance($first: Int = 100, $skip: Int = 0) {
+  insurancePools(
+    first: $first
+    skip: $skip
+    orderBy: createdAt
+    orderDirection: desc
+    where: { status: 0 }
+  ) {
     id
     status
     condition
     fee
     feeDecimals
     feeTo
-    maturityBlock
+    maturityTimestamp
+    staleTimestamp
     multiplier
     multiplierDecimals
-    staleBlock
     buyerValue
     sellerValue
     totalValue
